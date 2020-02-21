@@ -2,17 +2,14 @@ package tests;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import httpc.client.Client;
 import httpc.client.Options;
 
-import server.*;
+import server.library.*;
 
 public class HttpServerAcceptanceTests {
-    private Thread serverThread;
-
     class MockHttpRequestObserver implements HttpRequestObserver {
         private HttpResponse fakeResponse;
         public MockHttpRequestObserver(HttpResponse fakeResponse) {
@@ -35,11 +32,6 @@ public class HttpServerAcceptanceTests {
         public void run() {
             new HttpServer(80, observer).start();
         }
-    }
-
-    @BeforeEach
-    public void startServer() {
-
     }
 
     @Test

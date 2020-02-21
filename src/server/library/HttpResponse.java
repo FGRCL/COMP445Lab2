@@ -1,4 +1,4 @@
-package server;
+package server.library;
 
 import java.util.LinkedList;
 import java.util.List;
