@@ -38,7 +38,6 @@ public class AcceptanceTests {
         public void run() {
             Httpfs.main(new String[]{});
         }
-
     }
     
     @Test
