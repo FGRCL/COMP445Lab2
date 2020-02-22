@@ -14,8 +14,8 @@ import java.io.PrintStream;
 
 import org.junit.jupiter.api.Test;
 
-import httpc.client.Client;
-import httpc.client.Options;
+import client.Client;
+import client.Options;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
@@ -57,7 +57,7 @@ public class AcceptanceTests {
 	@Test
 	public void whenUploadTextFile_ThenShouldBeSuccessful() throws IOException {
 		//given
-		String fileContent = "Hello word";
+		String fileContent = "Hello world";
 		File textFile = new File("text.txt");
 		FileOutputStream fos = new FileOutputStream(textFile);
 		fos.write(fileContent.getBytes());
