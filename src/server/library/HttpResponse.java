@@ -14,6 +14,13 @@ public class HttpResponse{
         this.version = version;
         this.headers = new LinkedList<>();
     }
+    
+    public HttpResponse(HttpVersion version, Status status, String body) {
+        this.status = status;
+        this.version = version;
+        this.headers = new LinkedList<>();
+        this.body = body;//dad bods are hot
+    }
 
     public void addHeader(String key, String value) {
         headers.add(key + ": " + value);
@@ -49,6 +56,12 @@ public class HttpResponse{
             case INTERNAL_SERVER_ERROR:
                 builder.append("500 INTERNAL SERVER ERROR");
                 break;
+            case FORBIDDEN:
+            	builder.append("403 FORBIDDEN");
+            	break;
+            case CREATED:
+            	builder.append("201 CREATED");
+            	break;
         }
 
         builder.append("\r\n");

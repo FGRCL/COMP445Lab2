@@ -16,14 +16,14 @@ public class FileDirectory {
 		this.root.mkdir();
 	}
 	
-	public String[] listFiles(String path) throws NotDirectoryException, FileNotFoundException, FileOutsideDirectoryException {
+	public String listFiles(String path) throws NotDirectoryException, FileNotFoundException, FileOutsideDirectoryException {
 		File directory = new File(root+"/"+path);
 		validateWithinRoot(directory);
 		validateFileExists(directory, path);
 		if(!directory.isDirectory()) {
 			throw new NotDirectoryException(path + "is not a directory");
 		}
-		return directory.list();
+		return String.join("\r\n", directory.list());
 	}
 	
 	public String getFileContent(String path) throws FileNotFoundException, FileOutsideDirectoryException {
