@@ -11,7 +11,7 @@ public class HttpfsOptions {
     String directory = "files";
 
     public HttpfsOptions(String[] args) {
-        OptionsParser parser = new OptionsParser(0, new File("help.txt"));
+        OptionsParser parser = new OptionsParser(0, new File("help"));
 
 		parser.addOption("-v", 0, "-v Prints debugging messages.", (String[] arguments)->{
 			verbose = true;

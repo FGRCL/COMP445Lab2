@@ -35,7 +35,7 @@ public class OptionsParser {
 	
 	public String[] parse(String[] arguments) throws OptionDoesNotExistException {
 		String[] programArguments = getProgramArguments(arguments); 
-		if(arguments[0].equals("help")){
+		if(arguments.length > 0 && arguments[0].equals("help")){
 			programArguments = arguments;
 			if(arguments.length>1) {
 				printOptionHelp(arguments[1]);
