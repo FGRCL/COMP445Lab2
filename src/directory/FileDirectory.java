@@ -34,12 +34,12 @@ public class FileDirectory {
 		
 		//File Reading
 		FileInputStream os = new FileInputStream(file);
-		char character;
+		int character;
 		try {
-			character = (char) os.read();
+			character = os.read();
 			while(character != -1) {
-				fileContent.append(character);
-				character = (char) os.read();
+				fileContent.append((char)character);
+				character = os.read();
 			}
 			os.close();
 		} catch (IOException e) {
