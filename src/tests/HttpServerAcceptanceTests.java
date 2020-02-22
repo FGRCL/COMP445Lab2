@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import httpc.client.Client;
-import httpc.client.Options;
+import client.Client;
+import client.Options;
 
 import server.library.*;
 

@@ -14,8 +14,8 @@ import java.io.PrintStream;
 
 import org.junit.jupiter.api.Test;
 
-import httpc.client.Client;
-import httpc.client.Options;
+import client.Client;
+import client.Options;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
