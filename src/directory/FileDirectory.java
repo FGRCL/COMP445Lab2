@@ -41,6 +41,7 @@ public class FileDirectory {
 				fileContent.append(character);
 				character = (char) os.read();
 			}
+			os.close();
 		} catch (IOException e) {
 			// TODO Do we want to return a response if something happens here?
 			e.printStackTrace();
@@ -57,6 +58,7 @@ public class FileDirectory {
 			}else {
 				FileOutputStream fos = new FileOutputStream(file);
 				fos.write(content.getBytes());
+				fos.close();
 			}
 		} catch (IOException e) {
 			// TODO Do we want to return a response if something happens here?
