@@ -29,43 +29,61 @@ class FileServer implements HttpRequestObserver {
     	URI uri = null;
 		try {
 			uri = new URI(request.getUri());
-		} catch (URISyntaxException e1) {
+			if(method == Method.GET) {
+				if(uri.getPath().endsWith("/")) {
+	    			response = getDirectotyContent(uri);
+	    		}else {
+	    			response = getFileContent(uri);
+	    		}
+	    	}else if (method == Method.POST){
+	    		response = createFile(uri, request.getBody());
+	    	}
+		} catch (URISyntaxException e) {
 			//How the hell did we get here
-			e1.printStackTrace();
+			e.printStackTrace();
 		}
-		if(method == Method.GET) {
-			if(uri.getPath().endsWith("/")) {
-    			try {
-					String body = fileDirectory.listFiles(uri.getPath());
-					response = new HttpResponse(HttpVersion.OnePointOh, Status.OK, body);
-				} catch (NotDirectoryException e) {
-					return new HttpResponse(HttpVersion.OnePointOh, Status.NOT_FOUND, e.getMessage());
-				} catch (FileNotFoundException e) {
-					return new HttpResponse(HttpVersion.OnePointOh, Status.NOT_FOUND, e.getMessage());
-				} catch (FileOutsideDirectoryException e) {
-					return new HttpResponse(HttpVersion.OnePointOh, Status.FORBIDDEN, e.getMessage());
-				}
-    		}else {
-    			try {
-					String body = fileDirectory.getFileContent(uri.getPath());
-					response = new HttpResponse(HttpVersion.OnePointOh, Status.OK, body);
-				} catch (FileNotFoundException e) {
-					return new HttpResponse(HttpVersion.OnePointOh, Status.NOT_FOUND, e.getMessage());
-				} catch (FileOutsideDirectoryException e) {
-					return new HttpResponse(HttpVersion.OnePointOh, Status.FORBIDDEN, e.getMessage());
-				}
-    		}
-    	}else if (method == Method.POST){
-    		try {
-				fileDirectory.createFile(uri.getPath(), request.getBody(), true);//TODO handle the overwrite
-				response = new HttpResponse(HttpVersion.OnePointOh, Status.OK);
-			} catch (FileAlreadyExistsException e) {
-				return new HttpResponse(HttpVersion.OnePointOh, Status.BAD_REQUEST, e.getMessage());
-			} catch (FileOutsideDirectoryException e) {
-				return new HttpResponse(HttpVersion.OnePointOh, Status.FORBIDDEN, e.getMessage());
-			}
-    	}
-        return response;
+		return response;
     }
+
+	private HttpResponse createFile(URI uri, String body) {
+		HttpResponse response;
+		try {
+			fileDirectory.createFile(uri.getPath(), body, true);//TODO handle the overwrite
+			response = new HttpResponse(HttpVersion.OnePointOh, Status.OK);
+		} catch (FileAlreadyExistsException e) {
+			return new HttpResponse(HttpVersion.OnePointOh, Status.BAD_REQUEST, e.getMessage());
+		} catch (FileOutsideDirectoryException e) {
+			return new HttpResponse(HttpVersion.OnePointOh, Status.FORBIDDEN, e.getMessage());
+		}
+		return response;
+	}
+
+	private HttpResponse getFileContent(URI uri) {
+		HttpResponse response;
+		try {
+			String body = fileDirectory.getFileContent(uri.getPath());
+			response = new HttpResponse(HttpVersion.OnePointOh, Status.OK, body);
+		} catch (FileNotFoundException e) {
+			return new HttpResponse(HttpVersion.OnePointOh, Status.NOT_FOUND, e.getMessage());
+		} catch (FileOutsideDirectoryException e) {
+			return new HttpResponse(HttpVersion.OnePointOh, Status.FORBIDDEN, e.getMessage());
+		}
+		return response;
+	}
+	
+	private HttpResponse getDirectotyContent(URI uri) {
+		HttpResponse response;
+		try {
+			String body = fileDirectory.listFiles(uri.getPath());
+			response = new HttpResponse(HttpVersion.OnePointOh, Status.OK, body);
+		} catch (NotDirectoryException e) {
+			return new HttpResponse(HttpVersion.OnePointOh, Status.NOT_FOUND, e.getMessage());
+		} catch (FileNotFoundException e) {
+			return new HttpResponse(HttpVersion.OnePointOh, Status.NOT_FOUND, e.getMessage());
+		} catch (FileOutsideDirectoryException e) {
+			return new HttpResponse(HttpVersion.OnePointOh, Status.FORBIDDEN, e.getMessage());
+		}
+		return response;
+	}
 
 }
