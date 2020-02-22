@@ -31,7 +31,7 @@ class FileServer implements HttpRequestObserver {
 			uri = new URI(request.getUri());
 			if(method == Method.GET) {
 				if(uri.getPath().endsWith("/")) {
-	    			response = getDirectotyContent(uri);
+	    			response = getDirectoryContent(uri);
 	    		}else {
 	    			response = getFileContent(uri);
 	    		}
@@ -71,7 +71,7 @@ class FileServer implements HttpRequestObserver {
 		return response;
 	}
 	
-	private HttpResponse getDirectotyContent(URI uri) {
+	private HttpResponse getDirectoryContent(URI uri) {
 		HttpResponse response;
 		try {
 			String body = fileDirectory.listFiles(uri.getPath());
