@@ -119,4 +119,18 @@ public class AcceptanceTests {
 
         assert(response.startsWith("HTTP/1.0 404 NOT FOUND"));
     }
+
+    @Test
+    public void whenGetFileOutsideDirectory_ThenResponseShouldBeForbidden() {
+        String filename = "../text.txt";
+
+        Options options = new Options();
+        options.method = "get";
+        options.url = serverUrl + filename;
+        options.verbose = true;
+
+        String response = new Client(options).sendRequest();
+
+        assert(response.startsWith("HTTP/1.0 403 FORBIDDEN"));
+    }
 }
