@@ -2,8 +2,6 @@ package tests;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import client.Client;
@@ -30,11 +28,6 @@ public class AcceptanceTests {
     @AfterEach
     public void stopServer() {
         server.stop();
-        // try {
-        //     serverThread.join();
-        // } catch(InterruptedException e) {
-        //     //Ignore the interruption since the test is ending
-        // }
     }
 
     class TestServer implements Runnable {
@@ -49,7 +42,7 @@ public class AcceptanceTests {
     }
 	
 	@Test
-	public void whenUploadTextFile_ThenShouldBeSuccessful() throws IOException {
+	public void whenUploadTextFile_ThenShouldBeSuccessful() {
         String fileName = "whenUploadFileShouldBeSuccessful";
         String fileContent = fileName + "Content";
 
@@ -66,7 +59,7 @@ public class AcceptanceTests {
 	}
 	
 	@Test
-	public void whenUploadTextFile_ThenShouldBeListed() throws IOException {
+	public void whenUploadTextFile_ThenShouldBeListed() {
         String fileName = "whenUploadFileShouldBeListed";
         String fileContent = fileName + "Content";
         
@@ -90,7 +83,7 @@ public class AcceptanceTests {
 	}
 	
 	@Test
-	public void whenUploadTextFile_ThenContentShouldSameWhenDownloaded() throws IOException {
+	public void whenUploadTextFile_ThenContentShouldSameWhenDownloaded() {
         String fileName = "whenUploadFileThenContentShouldBeDownloaded";
         String fileContents = fileName + "Content";
 
@@ -111,5 +104,19 @@ public class AcceptanceTests {
         String downloadResponse = new Client(downloadOptions).sendRequest();
 
         assert(downloadResponse.equals(fileContents));
-	}
+    }
+    
+    @Test
+    public void whenGetNonexistentFile_ThenResponseShouldBeNotFound() {
+        String filename = "whenGetNonexistentFileShouldBeNotFound";
+
+        Options options = new Options();
+        options.method = "get";
+        options.url = serverUrl + filename;
+        options.verbose = true;
+
+        String response = new Client(options).sendRequest();
+
+        assert(response.startsWith("HTTP/1.0 404 NOT FOUND"));
+    }
 }
