@@ -24,6 +24,7 @@ public class HttpRequest {
         String line = reader.readLine();
         while(!line.isEmpty()) {
             addHeader(line);
+            line = reader.readLine();
         }
 
         if(!headers.containsKey("Content-Length")) {
@@ -32,10 +33,15 @@ public class HttpRequest {
         }
 
         final StringBuilder body = new StringBuilder();
-
-        line = reader.readLine();
-        while(!line.isEmpty()) {
-            body.append(line);
+        int contentLength;
+        try {
+            contentLength = Integer.parseInt(headers.get("Content-Length"));
+        } catch(NumberFormatException e) {
+            throw new InputMismatchException("Content-Length must be a string");
+        }
+        
+        for(int i = 0; i < contentLength; i++) {
+            body.append((char)reader.read());
         }
 
         this.body = body.toString();
