@@ -8,6 +8,7 @@ public class HttpServer {
     private int port;
     private HttpRequestObserver observer;
     private boolean open;
+    ServerSocket server;
 
     public HttpServer(int port, HttpRequestObserver observer) {
         this.port = port;
@@ -16,7 +17,7 @@ public class HttpServer {
     }
 
     public void start() throws IOException {
-        final ServerSocket server = new ServerSocket(port);
+        server = new ServerSocket(port);
         System.out.println("Listening on port " + port);
         listen(server);
     }
@@ -44,6 +45,10 @@ public class HttpServer {
     }
 
     public void close() {
-        open = false;
+        try {
+        server.close();
+        } catch(IOException e) {
+            
+        }
     }
 }

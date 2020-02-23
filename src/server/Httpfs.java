@@ -15,8 +15,7 @@ public class Httpfs {
             server = new HttpServer(options.port, fs);
             server.start();
         } catch(IOException e) {
-            System.err.println("Could not open the server: " + e);
-            System.exit(1);
+            System.err.println(e.getMessage());
         }
     }
     
