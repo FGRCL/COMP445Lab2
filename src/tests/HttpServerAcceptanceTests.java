@@ -2,6 +2,8 @@ package tests;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.Test;
 
 import client.Client;
@@ -30,7 +32,11 @@ public class HttpServerAcceptanceTests {
 
         @Override
         public void run() {
-            new HttpServer(80, observer).start();
+            try {
+                new HttpServer(80, observer).start();
+            } catch(IOException e) {
+                System.out.println("Failed to start test server");
+            }
         }
     }
 
