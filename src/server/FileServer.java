@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NotDirectoryException;
+import java.util.HashMap;
+import java.util.Map;
 
 import directory.FileDirectory;
 import directory.FileOutsideDirectoryException;
@@ -48,7 +50,9 @@ class FileServer implements HttpRequestObserver {
 	private HttpResponse createFile(URI uri, String body) {
 		HttpResponse response;
 		try {
-			fileDirectory.createFile(uri.getPath(), body, true);//TODO handle the overwrite
+			Map<String, String> queryParams = parseQueryParameters(uri);
+			boolean overwrite = queryParams.get("overwrite") == null ? false : Boolean.parseBoolean(queryParams.get("overwrite"));
+			fileDirectory.createFile(uri.getPath(), body, overwrite);
 			response = new HttpResponse(HttpVersion.OnePointOh, Status.OK);
 		} catch (FileAlreadyExistsException e) {
 			return new HttpResponse(HttpVersion.OnePointOh, Status.BAD_REQUEST, e.getMessage());
@@ -84,6 +88,16 @@ class FileServer implements HttpRequestObserver {
 			return new HttpResponse(HttpVersion.OnePointOh, Status.FORBIDDEN, e.getMessage());
 		}
 		return response;
+	}
+	
+	private Map<String, String> parseQueryParameters(URI uri){
+		Map<String, String> paramters = new HashMap<String, String>();
+		String[] params = uri.getQuery().split("&");
+		for(String param :params) {
+			String[] kvp = param.split("=");
+			paramters.put(kvp[0], kvp[1]);
+		}
+		return paramters;
 	}
 
 }
