@@ -6,7 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.FileAlreadyExistsException;
+import java.io.IOException;
 import java.nio.file.NotDirectoryException;
 
 import org.junit.jupiter.api.*;
@@ -31,7 +31,7 @@ public class DirectoryHelperTest {
 		//when
 		try {
 			dir.createFile(filePath, "abc", true);
-		} catch (FileAlreadyExistsException | FileOutsideDirectoryException e) {
+		} catch (FileOutsideDirectoryException | IOException e) {
 			fail("File shouldn't have a problem");
 		}
 		
@@ -46,7 +46,7 @@ public class DirectoryHelperTest {
 		String filePath = "testFile.txt";
 		try {
 			dir.createFile(filePath, "abc", true);
-		} catch (FileAlreadyExistsException | FileOutsideDirectoryException e) {
+		} catch (FileOutsideDirectoryException | IOException e) {
 			fail("File shouldn't have a problem");
 		}
 		
@@ -69,7 +69,7 @@ public class DirectoryHelperTest {
 		String filePath = "testFile.txt";
 		try {
 			dir.createFile(filePath, "abc", true);
-		} catch (FileAlreadyExistsException | FileOutsideDirectoryException e) {
+		} catch (FileOutsideDirectoryException | IOException e) {
 			fail("File shouldn't have a problem");
 		}
 		
@@ -77,7 +77,7 @@ public class DirectoryHelperTest {
 		String files = "";
 		try {
 			files = dir.getFileContent(filePath);
-		} catch (FileNotFoundException | FileOutsideDirectoryException e) {
+		} catch (FileOutsideDirectoryException | IOException e) {
 			fail("listing files failed");
 		}
 		
