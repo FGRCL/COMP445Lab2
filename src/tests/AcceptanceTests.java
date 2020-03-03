@@ -173,6 +173,33 @@ public class AcceptanceTests {
          downloadResponse = new Client(downloadOptions).sendRequest();
          
          assert(downloadResponse.equals(modifiedFileContents));
-    	
     }
+    
+    @Test
+    public void whenWriteToExistingFile_ThenShouldGetBadRequest() {
+    	String fileName = "whenUploadFileThenContentShouldBeDownloaded";
+        String fileContents = fileName + "Content";
+        String modifiedFileContents = fileName + "New Content";
+
+        Options uploadOptions = new Options();
+        uploadOptions.method = "post";
+        uploadOptions.url = serverUrl + fileName;
+        uploadOptions.verbose = true;
+        uploadOptions.inlineData = fileContents;
+
+        String uploadResponse = new Client(uploadOptions).sendRequest();
+
+        Options downloadOptions = new Options();
+        downloadOptions.method = "get";
+        downloadOptions.url = serverUrl + fileName;
+        downloadOptions.verbose = false;
+        
+        String downloadResponse = new Client(downloadOptions).sendRequest();
+                
+        uploadResponse = new Client(uploadOptions).sendRequest();
+        
+        assert(uploadResponse.startsWith("HTTP/1.0 400 BAD REQUEST"));
+
+    }
+    
 }
