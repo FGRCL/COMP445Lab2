@@ -19,14 +19,14 @@ public class DirectoryHelperTest {
 	
 	@AfterEach
 	public void removeDiretory() {
-		deleteDirectory(new File(TESTING_DIRECTORY));
+		TestUtils.deleteDirectory(new File(TESTING_DIRECTORY));
 	}
 	
 	@Test
 	public void whenCreatingNewFile_ThenFileExists() {
 		//given
 		FileDirectory dir = new FileDirectory(TESTING_DIRECTORY);
-		String filePath = "testFile.txt";
+		String filePath = "/testFile.txt";
 		
 		//when
 		try {
@@ -36,14 +36,14 @@ public class DirectoryHelperTest {
 		}
 		
 		//then
-		assertTrue(true);
+		assertTrue(new File(TESTING_DIRECTORY+filePath).getName().equals("testFile.txt"));
 	}
 	
 	@Test
 	public void whenCreatingNewFile_ThenFileShouldBeListed() {
 		//given
 		FileDirectory dir = new FileDirectory(TESTING_DIRECTORY);
-		String filePath = "testFile.txt";
+		String filePath = "/testFile.txt";
 		try {
 			dir.createFile(filePath, "abc", true);
 		} catch (FileOutsideDirectoryException | IOException e) {
@@ -53,20 +53,20 @@ public class DirectoryHelperTest {
 		//when
 		String files = "";
 		try {
-			files = dir.listFiles("");
+			files = dir.listFiles("/");
 		} catch (NotDirectoryException | FileNotFoundException | FileOutsideDirectoryException e) {
 			fail("listing files failed");
 		}
 		
 		//then
-		assertEquals(files, filePath);
+		assertEquals("testFile.txt", files);
 	}
 	
 	@Test
 	public void whenCreatingNewFile_ThenFileShouldHaveContent() {
 		//given
 		FileDirectory dir = new FileDirectory(TESTING_DIRECTORY);
-		String filePath = "testFile.txt";
+		String filePath = "/testFile.txt";
 		try {
 			dir.createFile(filePath, "abc", true);
 		} catch (FileOutsideDirectoryException | IOException e) {
@@ -83,15 +83,5 @@ public class DirectoryHelperTest {
 		
 		//then
 		assertEquals(files,"abc");
-	}
-	
-	private boolean deleteDirectory(File directoryToBeDeleted) { //I stole that from the internet
-	    File[] allContents = directoryToBeDeleted.listFiles();
-	    if (allContents != null) {
-	        for (File file : allContents) {
-	            deleteDirectory(file);
-	        }
-	    }
-	    return directoryToBeDeleted.delete();
 	}
 }

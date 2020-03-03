@@ -5,11 +5,10 @@ import client.Httpc;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import java.io.File;
+
 public class ClientAcceptanceTests {
     
-    public ClientAcceptanceTests() {
-    }
-
     @Test
     public void testGeneralHelp() {
         Httpc command = new Httpc();
@@ -107,5 +106,6 @@ public class ClientAcceptanceTests {
         
         String response = command.execute(args);
         assertTrue(response.equals("Wrote output to hello.txt"));
+        new File("hello.txt").delete();
     }
 }
