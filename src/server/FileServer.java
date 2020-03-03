@@ -55,7 +55,7 @@ class FileServer implements HttpRequestObserver {
 			boolean overwrite = queryParams.get("overwrite") == null ? false : Boolean.parseBoolean(queryParams.get("overwrite"));
 			fileDirectory.createFile(uri.getPath(), body, overwrite);
 			response = new HttpResponse(HttpVersion.OnePointOh, Status.OK);
-		} catch (java.nio.file.FileAlreadyExistsException e) {
+		} catch (FileAlreadyExistsException e) {
 			return new HttpResponse(HttpVersion.OnePointOh, Status.BAD_REQUEST, e.getMessage());
 		} catch (FileOutsideDirectoryException e) {
 			return new HttpResponse(HttpVersion.OnePointOh, Status.FORBIDDEN, e.getMessage());
