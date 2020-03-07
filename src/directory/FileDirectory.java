@@ -17,17 +17,17 @@ public class FileDirectory {
 	}
 	
 	public String listFiles(String path) throws NotDirectoryException, FileNotFoundException, FileOutsideDirectoryException {
-		File directory = new File(root+"/"+path);
+		File directory = new File(root.getPath()+path);
 		validateWithinRoot(directory);
 		validateFileExists(directory, path);
 		if(!directory.isDirectory()) {
-			throw new NotDirectoryException(path + "is not a directory");
+			throw new NotDirectoryException(path + " is not a directory");
 		}
 		return String.join("\r\n", directory.list());
 	}
 	
-	public String getFileContent(String path) throws FileNotFoundException, FileOutsideDirectoryException {
-		File file = new File(root+"/"+path);
+	public String getFileContent(String path) throws FileOutsideDirectoryException, IOException {
+		File file = new File(root+path);
 		validateWithinRoot(file);
 		validateFileExists(file, path);
 		StringBuilder fileContent = new StringBuilder();
@@ -35,35 +35,29 @@ public class FileDirectory {
 		//File Reading
 		FileInputStream os = new FileInputStream(file);
 		int character;
-		try {
+		character = os.read();
+		while(character != -1) {
+			fileContent.append((char)character);
 			character = os.read();
-			while(character != -1) {
-				fileContent.append((char)character);
-				character = os.read();
-			}
-			os.close();
-		} catch (IOException e) {
-			// TODO Do we want to return a response if something happens here?
-			e.printStackTrace();
 		}
+		os.close();
 		return fileContent.toString();
 	}
 	
-	public void createFile(String path, String content, boolean overwrite) throws FileAlreadyExistsException, FileOutsideDirectoryException {
-		File file = new File(root+"/"+path);
+	public void createFile(String path, String content, boolean overwrite) throws FileOutsideDirectoryException, FileNotFoundException, IOException {
+		File file = new File(root+path);
 		validateWithinRoot(file);
-		try {
-			if(!file.createNewFile() && overwrite) {
-				throw new FileAlreadyExistsException(path);
-			}else {
-				FileOutputStream fos = new FileOutputStream(file);
-				fos.write(content.getBytes());
-				fos.close();
-			}
-		} catch (IOException e) {
-			// TODO Do we want to return a response if something happens here?
-			e.printStackTrace();
+		if(path.endsWith("/")) {
+			throw new FileNotFoundException(path + " is not a file");
 		}
+		if(!file.createNewFile() && !overwrite) {
+			throw new FileAlreadyExistsException(path);
+		}else {
+			FileOutputStream fos = new FileOutputStream(file);
+			fos.write(content.getBytes());
+			fos.close();
+		}
+
 	}
 	
 	private void validateFileExists(File file, String path) throws FileNotFoundException {

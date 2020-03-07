@@ -2,12 +2,15 @@ package tests;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+
 import org.junit.jupiter.api.Test;
 
 import client.Client;
 import client.Options;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 
 import server.Httpfs;
@@ -39,6 +42,11 @@ public class AcceptanceTests {
         public void stop() {
             Httpfs.stop();
         }
+    }
+    
+    @AfterAll
+    public static void cleanupFiles() {
+    	TestUtils.deleteDirectory(new File("User_Files"));
     }
 	
 	@Test
@@ -133,4 +141,65 @@ public class AcceptanceTests {
 
         assert(response.startsWith("HTTP/1.0 403 FORBIDDEN"));
     }
+    
+    @Test
+    public void whenOverwriteFile_ThenContentShouldChange() {
+    	 String fileName = "whenUploadFileThenContentShouldBeDownloaded";
+         String fileContents = fileName + "Content";
+         String modifiedFileContents = fileName + "New Content";
+
+         Options uploadOptions = new Options();
+         uploadOptions.method = "post";
+         uploadOptions.url = serverUrl + fileName;
+         uploadOptions.verbose = true;
+         uploadOptions.inlineData = fileContents;
+
+         String uploadResponse = new Client(uploadOptions).sendRequest();
+
+         Options downloadOptions = new Options();
+         downloadOptions.method = "get";
+         downloadOptions.url = serverUrl + fileName;
+         downloadOptions.verbose = false;
+         
+         String downloadResponse = new Client(downloadOptions).sendRequest();
+         
+         uploadOptions.url += "?overwrite=true";
+         uploadOptions.inlineData = modifiedFileContents;
+         
+         uploadResponse = new Client(uploadOptions).sendRequest();
+         
+         assert(uploadResponse.startsWith(responseOkStatusLine));
+         
+         downloadResponse = new Client(downloadOptions).sendRequest();
+         
+         assert(downloadResponse.equals(modifiedFileContents));
+    }
+    
+    @Test
+    public void whenWriteToExistingFile_ThenShouldGetBadRequest() {
+    	String fileName = "whenUploadFileThenContentShouldBeDownloaded";
+        String fileContents = fileName + "Content";
+        String modifiedFileContents = fileName + "New Content";
+
+        Options uploadOptions = new Options();
+        uploadOptions.method = "post";
+        uploadOptions.url = serverUrl + fileName;
+        uploadOptions.verbose = true;
+        uploadOptions.inlineData = fileContents;
+
+        String uploadResponse = new Client(uploadOptions).sendRequest();
+
+        Options downloadOptions = new Options();
+        downloadOptions.method = "get";
+        downloadOptions.url = serverUrl + fileName;
+        downloadOptions.verbose = false;
+        
+        String downloadResponse = new Client(downloadOptions).sendRequest();
+                
+        uploadResponse = new Client(uploadOptions).sendRequest();
+        
+        assert(uploadResponse.startsWith("HTTP/1.0 400 BAD REQUEST"));
+
+    }
+    
 }
