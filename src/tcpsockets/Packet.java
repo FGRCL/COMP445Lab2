@@ -45,8 +45,16 @@ public class Packet {
 		}
 	}
 	
-	public toByteBuffer() {
+	private ByteBuffer toByteBuffer() {
 		ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+		int value = packetType.getValue();
+		byteBuffer.putInt(value);
+		byteBuffer.put((byte) sequenceNumber);
+		byteBuffer.put(peerAddress.getBytes());
+		byteBuffer.putInt(port);
+		byteBuffer.put(data);
 		byte[] bytes = new byte[HEADER_SIZE + data.length];
+		
+		return byteBuffer;
 	}
 }
