@@ -8,7 +8,8 @@ public abstract class TCPSocket {
 	protected DatagramChannel channel;
 	
 	public TCPSocket(String host, int port) {
-		try(DatagramChannel channel = DatagramChannel.open()){
+		try{
+			DatagramChannel channel = DatagramChannel.open();
 			this.channel = channel;
 			setupChannel(new InetSocketAddress(host, port));
 		} catch (IOException e) {

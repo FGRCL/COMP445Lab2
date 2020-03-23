@@ -10,6 +10,7 @@ public class Packet {
 	private String peerAddress;
 	private int port;
 	private byte[] data;
+	
 	private Packet(PacketType packetType, long sequenceNumber, String peerAddress, int port, byte[] data) {
 		super();
 		this.packetType = packetType;
@@ -17,6 +18,19 @@ public class Packet {
 		this.peerAddress = peerAddress;
 		this.port = port;
 		this.data = data;
+	}
+	
+	public Packet makePacket(ByteBuffer byteBuffer) {
+		PacketBuilder builder = new PacketBuilder();
+		
+		builder.setPacketType(PacketType.values()[byteBuffer.get()]);
+		builder.setSequenceNumber(byteBuffer.getInt());
+		builder.setPeerAddress(byteBuffer.get()+"."+byteBuffer.get()+"."+byteBuffer.get()+"."+byteBuffer.get());
+		builder.setPort(byteBuffer.getShort());
+		byte[] payload = new byte[1013];
+		byteBuffer.get(payload, 11, 1013);
+		builder.setData(payload);
+		return builder.build();
 	}
 	
 	public static class PacketBuilder{
@@ -45,8 +59,9 @@ public class Packet {
 		}
 	}
 	
-	public toByteBuffer() {
+	public ByteBuffer toByteBuffer() {
 		ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
 		byte[] bytes = new byte[HEADER_SIZE + data.length];
+		return null;
 	}
 }
