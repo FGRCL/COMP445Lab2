@@ -1,7 +1,5 @@
 package tcpsockets;
 
-import static java.nio.channels.SelectionKey.OP_READ;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -19,16 +17,20 @@ public class TCPClientSocket extends TCPSocket{
 	@Override
 	public void setupChannel(InetSocketAddress address) {
 		try {
-			channel.bind(null);
 			channel.connect(address);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
+	
+	public void performHandshake() {
+		
+	}
 
 	@Override
-	public String send(String data) throws IOException { //TODO we might want to handle exceptions here instead of passing it
+	public void send(String data){ //TODO we might want to handle exceptions here instead of passing it
 		Packet packet = new Packet.PacketBuilder()
 			.setPacketType(PacketType.SYN)
 			.setSequenceNumber(1)
@@ -37,23 +39,28 @@ public class TCPClientSocket extends TCPSocket{
 			.setData(data.getBytes())
 			.build();
 			
-		channel.write(packet.toByteBuffer());
+		try {
+			channel.write(packet.toByteBuffer());
+			channel.configureBlocking(false);
+			Selector selector = Selector.open();
+			channel.register(selector, SelectionKey.OP_READ);
+			selector.select(1000);
+			
+			Set<SelectionKey> keys = selector.selectedKeys();
+			
+			ByteBuffer response = ByteBuffer.allocate(1024);
+			channel.receive(response);
+			keys.clear();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
-		
-		channel.configureBlocking(false);
-		Selector selector = Selector.open();
-		channel.register(selector, OP_READ);
-		selector.select(1000);
-		
-		Set<SelectionKey> keys = selector.selectedKeys();
-		
-		ByteBuffer response = ByteBuffer.allocate(1024);
-		channel.receive(response);
-		
-		
-		keys.clear();
-		return response.toString();
-		
+	@Override
+	public String receive() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 

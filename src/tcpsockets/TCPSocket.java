@@ -8,10 +8,8 @@ public abstract class TCPSocket {
 	protected DatagramChannel channel;
 	
 	public TCPSocket(String host, int port) {
-		DatagramChannel channel;
 		try {
 			channel = DatagramChannel.open();
-			this.channel = channel;
 			setupChannel(new InetSocketAddress(host, port));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -20,6 +18,8 @@ public abstract class TCPSocket {
 	}
 	
 	public abstract void setupChannel(InetSocketAddress address);
-	
-	public abstract String send(String data) throws IOException;
+		
+	public abstract void send(String data);
+		
+	public abstract String receive();
 }

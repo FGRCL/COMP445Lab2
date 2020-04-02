@@ -2,6 +2,7 @@ package tcpsockets;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 
 public class TCPServerSocket extends TCPSocket{
 	public TCPServerSocket(int port) {
@@ -17,11 +18,26 @@ public class TCPServerSocket extends TCPSocket{
 			e.printStackTrace();
 		}
 	}
-
-	@Override
-	public String send(String data) {
-		// TODO Auto-generated method stub
+	
+	public String receive() {
+		ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE);
+		try {
+			channel.receive(buf);	
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Packet packet = Packet.makePacket(buf);
+		return packet.getPayload();
+	}
+	
+	public TCPSocket accept() {
+		//TODO handshake
 		return null;
 	}
 
+	@Override
+	public void send(String data) {
+		// TODO Auto-generated method stub
+		
+	}
 }
