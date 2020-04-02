@@ -18,4 +18,8 @@ public abstract class TCPSocket {
 	}
 	
 	public abstract void setupChannel(InetSocketAddress address);
+	
+	public abstract void send(String data);
+		
+	public abstract String receive();
 }

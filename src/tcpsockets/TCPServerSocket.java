@@ -1,13 +1,8 @@
 package tcpsockets;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
-
-import server.library.HttpRequest;
 
 public class TCPServerSocket extends TCPSocket{
 	public TCPServerSocket(int port) {
@@ -23,5 +18,19 @@ public class TCPServerSocket extends TCPSocket{
 			e.printStackTrace();
 		}
 	}
-
+	
+	public String receive() {
+		ByteBuffer buf = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE);
+		try {
+			channel.receive(buf);	
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Packet packet = Packet.makePacket(buf);
+		return packet.getPayload();
+	}
+	
+	public TCPClientSocket accept() {
+		TCPClientSocket clientSocket = TCPClientSocket();
+	}
 }
