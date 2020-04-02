@@ -5,12 +5,32 @@ import java.nio.ByteBuffer;
 public class Packet {
 	public static int MAX_PACKET_SIZE = 1024;
 	public static int MAX_PAYLOAD_SIZE = 1013;
-	private int HEADER_SIZE = 11;
-	private PacketType packetType = PacketType.ACK;
+	public static int HEADER_SIZE = MAX_PACKET_SIZE-MAX_PAYLOAD_SIZE;
+	private PacketType packetType;
 	private long sequenceNumber;
 	private String peerAddress;
 	private int port;
 	private byte[] data;
+
+	public PacketType getPacketType() {
+		return packetType;
+	}
+
+	public long getSequenceNumber() {
+		return sequenceNumber;
+	}
+
+	public String getPeerAddress() {
+		return peerAddress;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public byte[] getData() {
+		return data;
+	}
 
 	public String getPayload() {
 		StringBuffer payload = new StringBuffer();

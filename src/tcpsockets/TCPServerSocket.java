@@ -3,6 +3,8 @@ package tcpsockets;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 
 public class TCPServerSocket extends TCPSocket{
 	public TCPServerSocket(int port) {
@@ -31,7 +33,20 @@ public class TCPServerSocket extends TCPSocket{
 	}
 	
 	public TCPSocket accept() {
-		//TODO handshake
+		try {
+			Selector selector = Selector.open();
+			channel.register(selector, SelectionKey.OP_READ);
+			channel.configureBlocking(true);
+			
+			ByteBuffer dst = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE);
+			channel.receive(dst);
+			Packet ack = Packet.makePacket(dst);
+			
+			 
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 
