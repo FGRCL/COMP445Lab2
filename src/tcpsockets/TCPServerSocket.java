@@ -1,10 +1,7 @@
 package tcpsockets;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
-import java.nio.channels.DatagramChannel;
 
 public class TCPServerSocket extends TCPSocket{
 	public TCPServerSocket(int port) {
@@ -19,6 +16,12 @@ public class TCPServerSocket extends TCPSocket{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public String send(String data) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

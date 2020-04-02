@@ -25,27 +25,32 @@ public class Packet {
 		private String peerAddress = "0.0.0.0";
 		private int port = 0;
 		private byte[] data = new byte[0];
-		public void setPacketType(PacketType packetType) {
+		public PacketBuilder setPacketType(PacketType packetType) {
 			this.packetType = packetType;
+			return this;
 		}
-		public void setSequenceNumber(long sequenceNumber) {
+		public PacketBuilder setSequenceNumber(long sequenceNumber) {
 			this.sequenceNumber = sequenceNumber;
+			return this;
 		}
-		public void setPeerAddress(String peerAddress) {
+		public PacketBuilder setPeerAddress(String peerAddress) {
 			this.peerAddress = peerAddress;
+			return this;
 		}
-		public void setPort(int port) {
+		public PacketBuilder setPort(int port) {
 			this.port = port;
+			return this;
 		}
-		public void setData(byte[] data) {
+		public PacketBuilder setData(byte[] data) {
 			this.data = data;
+			return this;
 		}
 		public Packet build() {
 			return new Packet(packetType, sequenceNumber, peerAddress, port, data);
 		}
 	}
 	
-	private ByteBuffer toByteBuffer() {
+	public ByteBuffer toByteBuffer() {
 		ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
 		int value = packetType.getValue();
 		byteBuffer.putInt(value);

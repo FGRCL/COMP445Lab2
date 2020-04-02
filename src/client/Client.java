@@ -6,9 +6,7 @@
 package client;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
+import tcpsockets.TCPClientSocket;
 
 /**
  *
@@ -27,22 +25,17 @@ public class Client {
         SplitUrl url = new SplitUrl(options.url);
 
         try {
-            Socket socket = new Socket(url.getDomain(), url.getPort());
-
-            InputStream inputStream = socket.getInputStream();
-            OutputStream outputStream = socket.getOutputStream();
+        	TCPClientSocket socket = new TCPClientSocket(url.getDomain(), url.getPort());
 
             String request = Request.create(options);
 
-            outputStream.write(request.getBytes());
-            outputStream.flush();
+            String response = socket.send(request);
             
-            if(options.outFile != null) {
-                Response.writeToFile(options.outFile, inputStream);
-                return "Wrote output to " + options.outFile;
-            }
+//            if(options.outFile != null) {
+//                Response.writeToFile(options.outFile, inputStream);
+//                return "Wrote output to " + options.outFile;
+//            }
 
-            String response = Response.create(inputStream);
             response = handleRedirect(response);
 
             if (!options.verbose) {
@@ -51,7 +44,7 @@ public class Client {
                 response = response.substring(i + delimiter.length());
             }
 
-            socket.close();
+//            socket.close();
 
             return response;
         } catch (IOException e) {
