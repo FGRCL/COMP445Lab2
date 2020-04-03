@@ -41,7 +41,9 @@ public class TCPServerSocket extends TCPSocket{
 			ByteBuffer dst = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE);
 			channel.receive(dst);
 			Packet ack = Packet.makePacket(dst);
-			
+			if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
+				return new TCPServerConnectionSocket(ack.getPeerAddress(), ack.getPort());
+			}
 			 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
