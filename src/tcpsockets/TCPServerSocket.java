@@ -3,6 +3,7 @@ package tcpsockets;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 
@@ -33,23 +34,21 @@ public class TCPServerSocket extends TCPSocket{
 	}
 	
 	public TCPSocket accept() {
-		try {
-			Selector selector = Selector.open();
-			channel.register(selector, SelectionKey.OP_READ);
-			channel.configureBlocking(true);
-			
-			ByteBuffer dst = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE);
-			channel.receive(dst);
-			Packet ack = Packet.makePacket(dst);
-			if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
-				return new TCPServerConnectionSocket(ack.getPeerAddress(), ack.getPort());
+		while(true) {
+			try {
+				ByteBuffer dst = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE).order(ByteOrder.BIG_ENDIAN);
+				dst.clear();
+				channel.receive(dst);
+				Packet ack = Packet.makePacket(dst);
+				if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
+					return new TCPServerConnectionSocket(ack.getPeerAddress(), ack.getPort());
+				}
+				 
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			 
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		return null;
 	}
 
 	@Override

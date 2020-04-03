@@ -55,7 +55,7 @@ public class TCPClientSocket extends TCPSocket{
             
         // Send the syn packet over the datagram channel
         Selector selector = Selector.open();
-        channel.send(synPacket.toByteBuffer(), serverAddress);
+		channel.send(synPacket.toByteBuffer(), serverAddress);
         channel.configureBlocking(false);
         channel.register(selector, SelectionKey.OP_READ);
         selector.select(SYN_TIMEOUT);

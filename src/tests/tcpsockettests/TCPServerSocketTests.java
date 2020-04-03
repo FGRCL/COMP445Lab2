@@ -11,30 +11,9 @@ import tcpsockets.TCPServerSocket;
 
 public class TCPServerSocketTests {
 	
-	class TestServer implements Runnable {
-        private TCPServerSocket serverSocket;
 
-		public TestServer() {
-        	serverSocket = new TCPServerSocket(80);
-    		
-        }
-
-        @Override
-        public void run() {
-        	while(true) {
-        		serverSocket.accept();
-        	}
-        }
-    }
-	
 	@Test
-	public void WhenStartServer_ThenCanAcceptClients() {
-		//given
-		
-		//when
-		new TestServer();
-		
-		//then
-		TCPClientSocket client = new TCPClientSocket("localhost", 80);
+	public void canStartServer() {
+		TCPServerSocket server = new TCPServerSocket(80);
 	}
 }

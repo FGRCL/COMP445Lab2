@@ -50,14 +50,13 @@ public class Packet {
 	}
 	
 	public static Packet makePacket(ByteBuffer byteBuffer) {//TODO change this logic once I merge it
-		PacketBuilder builder = new PacketBuilder();
-		
-		builder.setPacketType(PacketType.values()[byteBuffer.get()]);
-		builder.setSequenceNumber(byteBuffer.getInt());
-		builder.setPeerAddress(byteBuffer.get()+"."+byteBuffer.get()+"."+byteBuffer.get()+"."+byteBuffer.get());
-		builder.setPort(byteBuffer.getShort());
-		byte[] payload = new byte[1013];
-		byteBuffer.get(payload, 11, 1013);
+		PacketBuilder builder = new PacketBuilder()
+				.setPacketType(PacketType.values()[byteBuffer.get(0)])
+				.setSequenceNumber(byteBuffer.getInt(1))
+				.setPeerAddress(byteBuffer.get(5)+"."+byteBuffer.get(6)+"."+byteBuffer.get(7)+"."+byteBuffer.get(8))
+				.setPort(byteBuffer.getShort(9));
+		byte[] payload = new byte[byteBuffer.remaining()];
+		byteBuffer.get(payload);
 		builder.setData(payload);
 		return builder.build();
 	}
