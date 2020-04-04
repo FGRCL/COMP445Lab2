@@ -10,8 +10,11 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class TCPClientSocket extends TCPSocket{
+    static Logger log = Logger.getLogger(TCPClientSocket.class.getName());
+    
 	private InetSocketAddress remoteAddress;
 	public TCPClientSocket(String host, int port) {
 		super(host, port);
@@ -21,7 +24,9 @@ public class TCPClientSocket extends TCPSocket{
 	@Override
 	public void setupChannel(InetSocketAddress address) {
 		try {
-			channel.connect(performHandshake(address));
+            InetSocketAddress serverConnectionAddress = performHandshake(address);
+            log.info("Received SYNACK from " + serverConnectionAddress.getHostName() + " port " + serverConnectionAddress.getPort());
+			channel.connect(serverConnectionAddress);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -47,7 +52,7 @@ public class TCPClientSocket extends TCPSocket{
 		Packet synPacket = new Packet.PacketBuilder()
             .setPacketType(PacketType.SYN)
             .setSequenceNumber(0)
-            .setPeerAddress(serverAddress.getHostString())
+            .setPeerAddress(serverAddress.getAddress())
             .setPort(serverAddress.getPort())
             .build();
 
@@ -86,7 +91,7 @@ public class TCPClientSocket extends TCPSocket{
         .setPacketType(PacketType.ACK)
         // Since this is the first ACK, the sequence number is 1
         .setSequenceNumber(1)
-        .setPeerAddress(serverAddress.getHostName())
+        .setPeerAddress(serverAddress.getAddress())
         .setPort(serverAddress.getPort())
         .build();
 
@@ -99,7 +104,7 @@ public class TCPClientSocket extends TCPSocket{
 		Packet packet = new Packet.PacketBuilder()
 			.setPacketType(PacketType.SYN)
 			.setSequenceNumber(1)
-			.setPeerAddress(remoteAddress.getHostName())
+			.setPeerAddress(remoteAddress.getAddress())
 			.setPort(remoteAddress.getPort())
 			.setData(data.getBytes())
 			.build();

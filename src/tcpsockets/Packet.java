@@ -1,5 +1,7 @@
 package tcpsockets;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -9,7 +11,7 @@ public class Packet {
 	public static int HEADER_SIZE = MAX_PACKET_SIZE-MAX_PAYLOAD_SIZE;
 	private PacketType packetType;
 	private long sequenceNumber;
-	private String peerAddress;
+	private InetAddress peerAddress;
 	private int port;
 	private byte[] data;
 
@@ -21,7 +23,7 @@ public class Packet {
 		return sequenceNumber;
 	}
 
-	public String getPeerAddress() {
+	public InetAddress getPeerAddress() {
 		return peerAddress;
 	}
 
@@ -41,31 +43,38 @@ public class Packet {
 		return payload.toString();
 	}
 	
-	private Packet(PacketType packetType, long sequenceNumber, String peerAddress, int port, byte[] data) {
+	private Packet(PacketType packetType, long sequenceNumber, InetAddress peerAddress, int port, byte[] data) {
 		super();
 		this.packetType = packetType;
-		this.sequenceNumber = sequenceNumber;
+        this.sequenceNumber = sequenceNumber;
 		this.peerAddress = peerAddress;
 		this.port = port;
 		this.data = data;
 	}
 	
-	public static Packet makePacket(ByteBuffer byteBuffer) {//TODO change this logic once I merge it
-		PacketBuilder builder = new PacketBuilder()
-				.setPacketType(PacketType.values()[byteBuffer.get(0)])
-				.setSequenceNumber(byteBuffer.getInt(1))
-				.setPeerAddress(byteBuffer.get(5)+"."+byteBuffer.get(6)+"."+byteBuffer.get(7)+"."+byteBuffer.get(8))
-				.setPort(byteBuffer.getShort(9));
-		byte[] payload = new byte[byteBuffer.remaining()];
-		byteBuffer.get(payload);
-		builder.setData(payload);
-		return builder.build();
+    public static Packet makePacket(ByteBuffer byteBuffer) {//TODO change this logic once I merge it
+        try {
+            byte[] address = {byteBuffer.get(5), byteBuffer.get(6), byteBuffer.get(7), byteBuffer.get(8)};
+            PacketBuilder builder = new PacketBuilder()
+                    .setPacketType(PacketType.values()[byteBuffer.get(0)])
+                    .setSequenceNumber(byteBuffer.getInt(1))
+                    .setPeerAddress(InetAddress.getByAddress(address))
+                    .setPort(byteBuffer.getShort(9));
+            byte[] payload = new byte[byteBuffer.remaining()];
+            byteBuffer.get(payload);
+            builder.setData(payload);
+            return builder.build();
+        } catch(UnknownHostException e) {
+            System.out.println(e.getMessage());
+            System.exit(1);
+            return null;
+        }
 	}
 	
 	public static class PacketBuilder{
 		private PacketType packetType = PacketType.ACK;
 		private long sequenceNumber = 1L;
-		private String peerAddress = "0.0.0.0";
+		private InetAddress peerAddress = null;
 		private int port = 0;
 		private byte[] data = new byte[0];
 		public PacketBuilder setPacketType(PacketType packetType) {
@@ -76,7 +85,7 @@ public class Packet {
 			this.sequenceNumber = sequenceNumber;
 			return this;
 		}
-		public PacketBuilder setPeerAddress(String peerAddress) {
+		public PacketBuilder setPeerAddress(InetAddress peerAddress) {
 			this.peerAddress = peerAddress;
 			return this;
 		}
@@ -94,13 +103,13 @@ public class Packet {
 	}
 	
 	public ByteBuffer toByteBuffer() {
+        assert(peerAddress.getAddress().length == 4);
         ByteBuffer byteBuffer = ByteBuffer.allocate(1024).order(ByteOrder.BIG_ENDIAN);
         byteBuffer.clear();
-		int value = packetType.getValue();
-		byteBuffer.putInt(value);
-		byteBuffer.put((byte) sequenceNumber);
-		byteBuffer.put(peerAddress.getBytes());
-		byteBuffer.putInt(port);
+        byteBuffer.put((byte) packetType.getValue());
+		byteBuffer.putInt((int) sequenceNumber);
+		byteBuffer.put(peerAddress.getAddress());
+		byteBuffer.putChar((char)port);
 		byteBuffer.put(data);
 		byteBuffer.flip();
 		return byteBuffer;
