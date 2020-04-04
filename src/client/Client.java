@@ -30,7 +30,7 @@ public class Client {
 
             String request = Request.create(options);
 
-            String response = socket.send(request);
+            String response = ""; //socket.send(request);
             
 //            if(options.outFile != null) {
 //                Response.writeToFile(options.outFile, inputStream);
