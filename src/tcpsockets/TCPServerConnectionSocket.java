@@ -7,8 +7,11 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class TCPServerConnectionSocket extends TCPSocket{
+    Logger log = Logger.getLogger(TCPServerConnectionSocket.class.getName());
+
 	public TCPServerConnectionSocket(String host, int port) {
 		super(host, port);
 	}
@@ -16,8 +19,10 @@ public class TCPServerConnectionSocket extends TCPSocket{
 	@Override
 	public void setupChannel(InetSocketAddress clientAddress) {
 		try {
+            channel.configureBlocking(false);
+            channel.connect(clientAddress);
 			if(handshakeSuccessful(clientAddress)) {
-					channel.connect(clientAddress);
+				log.info("Handshake successful with " + clientAddress.getHostName());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

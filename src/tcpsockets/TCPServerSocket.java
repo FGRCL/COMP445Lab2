@@ -43,11 +43,19 @@ public class TCPServerSocket extends TCPSocket{
 				ByteBuffer dst = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE).order(ByteOrder.BIG_ENDIAN);
 				dst.clear();
                 SocketAddress remote = channel.receive(dst);
+                /**
+                 * Normally, the router will change the packet peerAddress and port to match the address and port
+                 * of the client. However, our packet is not going through the router, so it remains the address
+                 * and port of the client. This is a temporary workaround to acquire the address and port of
+                 * the client from the SocketAddress returned by channel.receive()
+                 */
+                String[] clientInfo = remote.toString().split(":");
+                String clientAddress = clientInfo[0].substring(1);
+                int clientPort = Integer.parseInt(clientInfo[1]);
                 log.info("Received packet from " + remote);
-                log.info("Contents: " + dst.toString());
 				Packet ack = Packet.makePacket(dst);
 				if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
-					return new TCPServerConnectionSocket(ack.getPeerAddress().getHostAddress(), ack.getPort());
+					return new TCPServerConnectionSocket(clientAddress, clientPort);
 				}
 				 
 			} catch (IOException e) {
