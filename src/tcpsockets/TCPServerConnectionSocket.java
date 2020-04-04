@@ -33,7 +33,7 @@ public class TCPServerConnectionSocket extends TCPSocket{
             channel.configureBlocking(false);
             channel.connect(routerAddress);
 			if(handshakeSuccessful()) {
-				log.info("Handshake successful with " + clientAddress.getHostName());
+				log.info("Handshake successful with " + clientAddress.getHostName() + ":" + clientAddress.getPort());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

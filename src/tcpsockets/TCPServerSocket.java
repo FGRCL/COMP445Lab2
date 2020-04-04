@@ -53,6 +53,7 @@ public class TCPServerSocket extends TCPSocket{
                 InetSocketAddress clientAddress = getClientAddress(ack);
 
 				if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
+                    log.info("Received SYN from " + clientAddress.getHostName() + ":" + clientAddress.getPort());
                     TCPSocket connection = new TCPServerConnectionSocket(clientAddress, routerAddress);
                     connection.setupChannel();
                     return connection;
