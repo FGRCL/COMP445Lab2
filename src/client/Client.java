@@ -6,6 +6,7 @@
 package client;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 import tcpsockets.TCPClientSocket;
 
@@ -26,7 +27,8 @@ public class Client {
         SplitUrl url = new SplitUrl(options.url);
 
         try {
-        	TCPClientSocket socket = new TCPClientSocket(url.getDomain(), url.getPort());
+            InetSocketAddress address = new InetSocketAddress(url.getDomain(), url.getPort());
+        	TCPClientSocket socket = new TCPClientSocket(address);
 
             String request = Request.create(options);
 

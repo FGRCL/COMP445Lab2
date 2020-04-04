@@ -55,11 +55,12 @@ public class Packet {
     public static Packet makePacket(ByteBuffer byteBuffer) {//TODO change this logic once I merge it
         try {
             byte[] address = {byteBuffer.get(5), byteBuffer.get(6), byteBuffer.get(7), byteBuffer.get(8)};
+            int port = byteBuffer.getShort(9) + 65536;
             PacketBuilder builder = new PacketBuilder()
                     .setPacketType(PacketType.values()[byteBuffer.get(0)])
                     .setSequenceNumber(byteBuffer.getInt(1))
                     .setPeerAddress(InetAddress.getByAddress(address))
-                    .setPort(byteBuffer.getShort(9));
+                    .setPort(port);
             byte[] payload = new byte[byteBuffer.remaining()];
             byteBuffer.get(payload);
             builder.setData(payload);
@@ -109,7 +110,7 @@ public class Packet {
         byteBuffer.put((byte) packetType.getValue());
 		byteBuffer.putInt((int) sequenceNumber);
 		byteBuffer.put(peerAddress.getAddress());
-		byteBuffer.putChar((char)port);
+		byteBuffer.putShort((short)port);
 		byteBuffer.put(data);
 		byteBuffer.flip();
 		return byteBuffer;

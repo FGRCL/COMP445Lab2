@@ -6,18 +6,22 @@ import java.nio.channels.DatagramChannel;
 
 public abstract class TCPSocket {
 	protected DatagramChannel channel;
-	
-	public TCPSocket(String host, int port) {
+    
+    /**
+     * Creates a new TCP socket that uses a datagram channel
+     * to send datagrams to the target address
+     * @param target The address to which datagrams will be sent
+     */
+	public TCPSocket(InetSocketAddress targetAddress) {
 		try {
 			channel = DatagramChannel.open();
-			setupChannel(new InetSocketAddress(host, port));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            e.printStackTrace();
+            System.exit(1);
 		}
 	}
 	
-	public abstract void setupChannel(InetSocketAddress address);
+	public abstract void setupChannel();
 		
 	public abstract void send(String data);
 		

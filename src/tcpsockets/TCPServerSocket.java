@@ -12,14 +12,17 @@ import java.util.logging.Logger;
 public class TCPServerSocket extends TCPSocket{
     static Logger log = Logger.getLogger(TCPServerSocket.class.getName());
 
+    InetSocketAddress myAddress;
+
 	public TCPServerSocket(int port) {
-		super("localhost", port);
+        super(new InetSocketAddress("localhost", port));
+        myAddress = new InetSocketAddress("localhost", port);
 	}
 
-	@Override
-	public void setupChannel(InetSocketAddress address) {
+    @Override
+	public void setupChannel() {
 		try {
-			channel.bind(address);
+			channel.bind(myAddress);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -43,19 +46,16 @@ public class TCPServerSocket extends TCPSocket{
 				ByteBuffer dst = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE).order(ByteOrder.BIG_ENDIAN);
 				dst.clear();
                 SocketAddress remote = channel.receive(dst);
-                /**
-                 * Normally, the router will change the packet peerAddress and port to match the address and port
-                 * of the client. However, our packet is not going through the router, so it remains the address
-                 * and port of the client. This is a temporary workaround to acquire the address and port of
-                 * the client from the SocketAddress returned by channel.receive()
-                 */
-                String[] clientInfo = remote.toString().split(":");
-                String clientAddress = clientInfo[0].substring(1);
-                int clientPort = Integer.parseInt(clientInfo[1]);
-                log.info("Received packet from " + remote);
-				Packet ack = Packet.makePacket(dst);
+                
+                Packet ack = Packet.makePacket(dst);
+
+                InetSocketAddress routerAddress = getRouterAddress(remote);
+                InetSocketAddress clientAddress = getClientAddress(ack);
+
 				if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
-					return new TCPServerConnectionSocket(clientAddress, clientPort);
+                    TCPSocket connection = new TCPServerConnectionSocket(clientAddress, routerAddress);
+                    connection.setupChannel();
+                    return connection;
 				}
 				 
 			} catch (IOException e) {
@@ -69,5 +69,18 @@ public class TCPServerSocket extends TCPSocket{
 	public void send(String data) {
 		// TODO Auto-generated method stub
 		
-	}
+    }
+    
+    public InetSocketAddress getRouterAddress(SocketAddress remote) {
+        String[] info = remote.toString().split(":");
+        String address = info[0].substring(1);
+        int port = Integer.parseInt(info[1]);
+        return new InetSocketAddress(address, port);
+    }
+
+    public InetSocketAddress getClientAddress(Packet ack) {
+        String host = ack.getPeerAddress().getHostAddress();
+        int port = ack.getPort();
+        return new InetSocketAddress(host, port);
+    }
 }

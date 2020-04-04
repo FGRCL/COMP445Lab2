@@ -12,16 +12,27 @@ import java.util.logging.Logger;
 public class TCPServerConnectionSocket extends TCPSocket{
     Logger log = Logger.getLogger(TCPServerConnectionSocket.class.getName());
 
-	public TCPServerConnectionSocket(String host, int port) {
-		super(host, port);
-	}
+    InetSocketAddress clientAddress;
+    InetSocketAddress routerAddress;
+
+	public TCPServerConnectionSocket(InetSocketAddress clientAddress) {
+        super(clientAddress);
+        this.clientAddress = clientAddress;
+        this.routerAddress = clientAddress;
+    }
+    
+    public TCPServerConnectionSocket(InetSocketAddress clientAddress, InetSocketAddress routerAddress) {
+        super(routerAddress);
+        this.clientAddress = clientAddress;
+        this.routerAddress = routerAddress;
+    }
 	
 	@Override
-	public void setupChannel(InetSocketAddress clientAddress) {
+	public void setupChannel() {
 		try {
             channel.configureBlocking(false);
-            channel.connect(clientAddress);
-			if(handshakeSuccessful(clientAddress)) {
+            channel.connect(routerAddress);
+			if(handshakeSuccessful()) {
 				log.info("Handshake successful with " + clientAddress.getHostName());
 			}
 		} catch (IOException e) {
@@ -30,12 +41,12 @@ public class TCPServerConnectionSocket extends TCPSocket{
 		}
 	}
 	
-	private boolean handshakeSuccessful(InetSocketAddress address) throws IOException {
+	private boolean handshakeSuccessful() throws IOException {
 		Packet synackPacket  = new Packet.PacketBuilder()
 				.setPacketType(PacketType.SYNACK)
 				.setSequenceNumber(1)
-				.setPeerAddress(address.getAddress())
-				.setPort(address.getPort())
+				.setPeerAddress(clientAddress.getAddress())
+				.setPort(clientAddress.getPort())
 				.build();
 			
 			Selector sel;
