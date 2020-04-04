@@ -3,7 +3,6 @@ package tcpsockets;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Set;
@@ -33,7 +32,7 @@ public class TCPServerConnectionSocket extends TCPSocket{
             channel.configureBlocking(false);
             channel.connect(routerAddress);
 			if(handshakeSuccessful()) {
-				log.info("Handshake successful with " + clientAddress.getHostName());
+				log.info("Handshake successful with " + clientAddress.getHostName() + ":" + clientAddress.getPort());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

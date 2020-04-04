@@ -5,8 +5,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.util.logging.Logger;
 
 public class TCPServerSocket extends TCPSocket{
@@ -53,6 +51,7 @@ public class TCPServerSocket extends TCPSocket{
                 InetSocketAddress clientAddress = getClientAddress(ack);
 
 				if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
+                    log.info("Received SYN from " + clientAddress.getHostName() + ":" + clientAddress.getPort());
                     TCPSocket connection = new TCPServerConnectionSocket(clientAddress, routerAddress);
                     connection.setupChannel();
                     return connection;

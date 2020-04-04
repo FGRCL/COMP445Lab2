@@ -1,14 +1,11 @@
 package tests.tcpsockettests;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 import org.junit.Test;
 
 import router.Router;
-import server.library.HttpRequestObserver;
-import server.library.HttpServer;
 import tcpsockets.TCPClientSocket;
 import tcpsockets.TCPServerSocket;
 
@@ -54,7 +51,7 @@ public class TCPSocketAcceptanceTests {
         InetSocketAddress serverAddress = new InetSocketAddress(localhost, serverPort);
         InetSocketAddress routerAddress = new InetSocketAddress(localhost, routerPort);
 
-		//Router.start(3000, 0.0f, "5ms", 1);
+		Router.start(3000, 0.0f, "5ms", 1);
 		TestServer server = new TestServer(serverPort);
 		Thread t = new Thread(server);
         t.start();
