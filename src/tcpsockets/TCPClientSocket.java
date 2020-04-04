@@ -1,17 +1,16 @@
 package tcpsockets;
 
-import tcpsockets.exceptions.*;
-
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.logging.Logger;
+import tcpsockets.exceptions.BadPacketException;
+import tcpsockets.exceptions.TimeoutExceededException;
+import tcpsockets.streams.TCPInputStream;
+import tcpsockets.streams.TCPOutputStream;
 
 public class TCPClientSocket extends TCPSocket{
     static Logger log = Logger.getLogger(TCPClientSocket.class.getName());
@@ -19,10 +18,13 @@ public class TCPClientSocket extends TCPSocket{
     private InetSocketAddress serverAddress;
     private InetSocketAddress routerAddress;
     
+    private TCPOutputStream outputStream;
+    private TCPInputStream inputStream;
+    
 	public TCPClientSocket(InetSocketAddress serverAddress) {
         super(serverAddress);
         this.serverAddress = serverAddress;
-        routerAddress = serverAddress;
+        this.routerAddress = serverAddress;
     }
     
     public TCPClientSocket(InetSocketAddress serverAddress, InetSocketAddress routerAddress) {
@@ -136,7 +138,7 @@ public class TCPClientSocket extends TCPSocket{
 			e.printStackTrace();
 		}
 	}
-
+	
 	@Override
 	public String receive() {
 		// TODO Auto-generated method stub
