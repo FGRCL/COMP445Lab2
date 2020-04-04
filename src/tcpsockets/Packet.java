@@ -1,5 +1,7 @@
 package tcpsockets;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -96,9 +98,8 @@ public class Packet {
 	public ByteBuffer toByteBuffer() {
         ByteBuffer byteBuffer = ByteBuffer.allocate(1024).order(ByteOrder.BIG_ENDIAN);
         byteBuffer.clear();
-		int value = packetType.getValue();
-		byteBuffer.putInt(value);
-		byteBuffer.put((byte) sequenceNumber);
+        byteBuffer.put((byte) packetType.getValue());
+		byteBuffer.putInt((int) sequenceNumber);
 		byteBuffer.put(peerAddress.getBytes());
 		byteBuffer.putInt(port);
 		byteBuffer.put(data);
