@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import router.Router;
 import server.library.HttpRequestObserver;
 import server.library.HttpServer;
 import tcpsockets.TCPClientSocket;
@@ -33,11 +34,13 @@ public class TCPSocketAcceptanceTests {
 	
 	@Test
 	public void CanPerformHandshake() {
+		Router.start();
 		TestServer server = new TestServer();
 		Thread t = new Thread(server);
         t.start();
 		TCPClientSocket client;
 		client = new TCPClientSocket("localhost", 8080);
+		Router.stop();
 	}
 
 }
