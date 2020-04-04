@@ -1,6 +1,7 @@
 package tcpsockets;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Packet {
 	public static int MAX_PACKET_SIZE = 1024;
@@ -93,14 +94,15 @@ public class Packet {
 	}
 	
 	public ByteBuffer toByteBuffer() {
-		ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024).order(ByteOrder.BIG_ENDIAN);
+        byteBuffer.clear();
 		int value = packetType.getValue();
 		byteBuffer.putInt(value);
 		byteBuffer.put((byte) sequenceNumber);
 		byteBuffer.put(peerAddress.getBytes());
 		byteBuffer.putInt(port);
 		byteBuffer.put(data);
-		
+		byteBuffer.flip();
 		return byteBuffer;
 	}
 }

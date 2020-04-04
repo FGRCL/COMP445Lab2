@@ -2,12 +2,16 @@ package tcpsockets;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.logging.Logger;
 
 public class TCPServerSocket extends TCPSocket{
+    static Logger log = Logger.getLogger(TCPServerSocket.class.getName());
+
 	public TCPServerSocket(int port) {
 		super("localhost", port);
 	}
@@ -38,7 +42,9 @@ public class TCPServerSocket extends TCPSocket{
 			try {
 				ByteBuffer dst = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE).order(ByteOrder.BIG_ENDIAN);
 				dst.clear();
-				channel.receive(dst);
+                SocketAddress remote = channel.receive(dst);
+                log.info("Received packet from " + remote);
+                log.info("Contents: " + dst.toString());
 				Packet ack = Packet.makePacket(dst);
 				if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
 					return new TCPServerConnectionSocket(ack.getPeerAddress(), ack.getPort());
