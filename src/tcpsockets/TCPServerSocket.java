@@ -5,8 +5,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.util.logging.Logger;
 
 public class TCPServerSocket extends TCPSocket{

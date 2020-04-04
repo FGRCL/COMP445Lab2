@@ -1,14 +1,11 @@
 package tests.tcpsockettests;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 import org.junit.Test;
 
 import router.Router;
-import server.library.HttpRequestObserver;
-import server.library.HttpServer;
 import tcpsockets.TCPClientSocket;
 import tcpsockets.TCPServerSocket;
 

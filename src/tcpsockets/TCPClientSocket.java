@@ -3,13 +3,10 @@ package tcpsockets;
 import tcpsockets.exceptions.*;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.logging.Logger;
 
