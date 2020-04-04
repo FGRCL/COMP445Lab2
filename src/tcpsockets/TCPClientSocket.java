@@ -47,7 +47,7 @@ public class TCPClientSocket extends TCPSocket{
 		Packet synPacket = new Packet.PacketBuilder()
             .setPacketType(PacketType.SYN)
             .setSequenceNumber(0)
-            .setPeerAddress(serverAddress.getHostString())
+            .setPeerAddress(serverAddress.getAddress())
             .setPort(serverAddress.getPort())
             .build();
 
@@ -86,7 +86,7 @@ public class TCPClientSocket extends TCPSocket{
         .setPacketType(PacketType.ACK)
         // Since this is the first ACK, the sequence number is 1
         .setSequenceNumber(1)
-        .setPeerAddress(serverAddress.getHostName())
+        .setPeerAddress(serverAddress.getAddress())
         .setPort(serverAddress.getPort())
         .build();
 
@@ -99,7 +99,7 @@ public class TCPClientSocket extends TCPSocket{
 		Packet packet = new Packet.PacketBuilder()
 			.setPacketType(PacketType.SYN)
 			.setSequenceNumber(1)
-			.setPeerAddress(remoteAddress.getHostName())
+			.setPeerAddress(remoteAddress.getAddress())
 			.setPort(remoteAddress.getPort())
 			.setData(data.getBytes())
 			.build();

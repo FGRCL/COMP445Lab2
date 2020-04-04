@@ -29,7 +29,7 @@ public class TCPServerConnectionSocket extends TCPSocket{
 		Packet synackPacket  = new Packet.PacketBuilder()
 				.setPacketType(PacketType.SYNACK)
 				.setSequenceNumber(1)
-				.setPeerAddress(address.getHostName())
+				.setPeerAddress(address.getAddress())
 				.setPort(address.getPort())
 				.build();
 			

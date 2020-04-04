@@ -47,7 +47,7 @@ public class TCPServerSocket extends TCPSocket{
                 log.info("Contents: " + dst.toString());
 				Packet ack = Packet.makePacket(dst);
 				if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
-					return new TCPServerConnectionSocket(ack.getPeerAddress(), ack.getPort());
+					return new TCPServerConnectionSocket(ack.getPeerAddress().getHostAddress(), ack.getPort());
 				}
 				 
 			} catch (IOException e) {
