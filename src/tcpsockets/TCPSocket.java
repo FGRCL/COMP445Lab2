@@ -6,14 +6,12 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 
 import tcpsockets.Packet.PacketBuilder;
 
@@ -69,8 +67,7 @@ public abstract class TCPSocket implements Runnable {
 
     private void selectiveRepeat() throws IOException {
         long currentSequenceNumber = 2;
-        long oldestUnackedPacket = currentSequenceNumber;
-
+        long sendBase = currentSequenceNumber;
         long receiveBase = 2;
         int windowSize = 3;
         int timeout = 1000;
@@ -79,6 +76,8 @@ public abstract class TCPSocket implements Runnable {
         int pointer = 0;
 
         HashMap<Long, PacketStatusPair> packets = new HashMap<Long, PacketStatusPair>();
+
+        HashMap<Long, Packet> incomingPackets = new HashMap<Long, Packet>();
 
         Selector selector = Selector.open();
         channel.configureBlocking(false);
@@ -106,39 +105,51 @@ public abstract class TCPSocket implements Runnable {
             }
 
             // send packets
-            for (long i = oldestUnackedPacket; i < oldestUnackedPacket + windowSize; i++) {
+            for (long i = sendBase; i < sendBase + windowSize; i++) {
                 PacketStatusPair packetPair = packets.get(i);
                 if (packetPair.status == PacketStatusPair.Status.NOT_SENT) {
                     channel.write(packetPair.packet.toByteBuffer());
                     packetPair.status = PacketStatusPair.Status.NACK;
                 }
             }
-
-            // timeout
-            selector.select(1000);
-            Set<SelectionKey> keys = selector.selectedKeys();
-
-            boolean receivedAck = false;
-            if (keys.contains(SelectionKey.OP_READ)) {
-                Packet receivedPacket = receivePacket();
+            
+            Packet receivedPacket = receivePacket();
+            while(receivedPacket != null) {
                 if (receivedPacket.getPacketType() == PacketType.ACK) {
                     PacketStatusPair ackedPacket = packets.get(receivedPacket.getSequenceNumber());
                     ackedPacket.status = PacketStatusPair.Status.ACK;
-                    receivedAck = true;
+
                     // increment base
-                    long newSendBase = oldestUnackedPacket;
+                    long newSendBase = sendBase;
                     while (packets.get(newSendBase).status == PacketStatusPair.Status.ACK) {
                         newSendBase++;
                     }
-                    oldestUnackedPacket = newSendBase;
+                    sendBase = newSendBase;
+
                 } else if (receivedPacket.getPacketType() == PacketType.DATA) {
-                    // receive data
+                    // Add the received data to our buffer
+                    incomingPackets.putIfAbsent(receivedPacket.getSequenceNumber(), receivedPacket);
+
+                    // Send an ACK back to the other end
+                    sendAck(receivedPacket.getSequenceNumber());
+
+                    // If we are able to send data to the upper layer, send some data
+                    while(incomingPackets.containsKey(receiveBase)) {
+                        output.write(incomingPackets.get(receiveBase).getData());
+                        incomingPackets.remove(receiveBase);
+                        receiveBase += 1;
+                    }
+                } else if(receivedPacket.getPacketType() == PacketType.FIN) {
+                    output.close();
+                    channel.close();
+                    return;
                 }
             }
 
             // resend nack packets
-            if (!receivedAck) {
-                for (long i = oldestUnackedPacket; i < oldestUnackedPacket + windowSize; i++) {
+            boolean timerExceeded = false;
+            if (timerExceeded) {
+                for (long i = sendBase; i < sendBase + windowSize; i++) {
                     PacketStatusPair packetPair = packets.get(i);
                     if (packetPair.status == PacketStatusPair.Status.NACK) {
                         channel.write(packetPair.packet.toByteBuffer());
@@ -151,11 +162,23 @@ public abstract class TCPSocket implements Runnable {
     private Packet receivePacket() {
         ByteBuffer byteBuffer = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE);
         try {
-            channel.receive(byteBuffer);
+            SocketAddress socket = channel.receive(byteBuffer);
+            if(socket == null)
+                return null;
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return Packet.makePacket(byteBuffer);
+    }
+
+    private void sendAck(long sequenceNumber) throws IOException {
+        Packet ack = new PacketBuilder()
+        .setPacketType(PacketType.ACK)
+        .setPeerAddress(targetAddress.getAddress())
+        .setPort(targetAddress.getPort())
+        .setSequenceNumber(sequenceNumber)
+        .build();
+        channel.write(ack.toByteBuffer());
     }
 }
