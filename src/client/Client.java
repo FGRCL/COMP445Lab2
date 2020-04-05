@@ -28,7 +28,6 @@ public class Client {
 
         try {
             InetSocketAddress address = new InetSocketAddress(url.getDomain(), url.getPort());
-        	TCPClientSocket socket = new TCPClientSocket(address);
 
             String request = Request.create(options);
 
