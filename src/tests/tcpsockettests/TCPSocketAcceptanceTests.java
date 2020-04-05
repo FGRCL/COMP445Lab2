@@ -66,6 +66,7 @@ public class TCPSocketAcceptanceTests {
                 String line = reader.readLine();
                 if(line.equals(expected)) {
                     output.write(response.toString().getBytes("UTF-8"));
+                    output.write("\r\n".toString().getBytes("UTF-8"));
                 }
             } catch(Exception e) {
                 e.printStackTrace();
@@ -104,8 +105,8 @@ public class TCPSocketAcceptanceTests {
             assert(response.equals(expectedResponse));
         } catch(Exception e) {
             assert(false);
+        } finally {
+            Router.stop();
         }
-        
 	}
-
 }
