@@ -72,6 +72,7 @@ public abstract class TCPSocket implements Runnable {
     private HashMap<Long, PacketStatusPair> packets;
     byte[] data;
     int pointer;
+    boolean closed;
 
     private void selectiveRepeat() throws IOException {
         currentSequenceNumber = 2;
@@ -99,11 +100,11 @@ public abstract class TCPSocket implements Runnable {
                 data[pointer] = (byte) input.read();
                 pointer++;
                 if (pointer >= Packet.MAX_PAYLOAD_SIZE) {
-                    sendPacket();
+                    sendDataPacket();
                 }
             }
             if(pointer > 0) {
-                sendPacket();
+                sendDataPacket();
             }
 
             // send packets
@@ -118,8 +119,8 @@ public abstract class TCPSocket implements Runnable {
             
             Packet receivedPacket = receivePacket();
             while(receivedPacket != null) {
+                logPacketReceived(receivedPacket);
                 if (receivedPacket.getPacketType() == PacketType.ACK) {
-                    log.info("Received ACK with seq " + receivedPacket.getSequenceNumber() + " from " + receivedPacket.getPort());
                     PacketStatusPair ackedPacket = packets.get(receivedPacket.getSequenceNumber());
                     if(ackedPacket == null) {
                         log.info("WARNING: Unexpected ACK with sequence number " + receivedPacket.getSequenceNumber());
@@ -133,8 +134,12 @@ public abstract class TCPSocket implements Runnable {
                     }
                     sendBase = newSendBase;
 
+                    // Check if we are closed and have sent everything
+                    if(closed && sendBase == currentSequenceNumber && input.available() == 0) {
+                        sendFinPacket();
+                    }
+
                 } else if (receivedPacket.getPacketType() == PacketType.DATA) {
-                    log.info("Received DATA with seq " + receivedPacket.getSequenceNumber() + " from " + receivedPacket.getPort());
                     // Add the received data to our buffer
                     if(receivedPacket.getSequenceNumber() >= receiveBase)
                         incomingPackets.put(receivedPacket.getSequenceNumber(), receivedPacket);
@@ -151,8 +156,10 @@ public abstract class TCPSocket implements Runnable {
                         receiveBase += 1;
                     }
                 } else if(receivedPacket.getPacketType() == PacketType.FIN) {
-                    log.info("Recieved FIN with sequence number " + receivedPacket.getSequenceNumber() + " from " + receivedPacket.getPort());
+                    sendFinAckPacket();
                     output.close();
+                } else if(receivedPacket.getPacketType() == PacketType.FINACK) {
+                    sendAck(receivedPacket.getSequenceNumber());
                     return;
                 }
                 receivedPacket = receivePacket();
@@ -172,7 +179,7 @@ public abstract class TCPSocket implements Runnable {
         }
     }
 
-    private void sendPacket() {
+    private void sendDataPacket() {
         // Create a new packet to send
         byte[] payload = new byte[pointer];
         for(int i = 0; i < pointer; i++) {
@@ -191,7 +198,7 @@ public abstract class TCPSocket implements Runnable {
         // Reset the data
         pointer = 0;
 
-        log.info("Sent data packet with sequence number " + packet.getSequenceNumber() + " to port " + packet.getPort());
+        logPacketSent(packet);
     }
 
     private Packet receivePacket() {
@@ -215,10 +222,14 @@ public abstract class TCPSocket implements Runnable {
         .setSequenceNumber(sequenceNumber)
         .build();
         channel.write(ack.toByteBuffer());
-        log.info("Sent ACK with sequence number " + sequenceNumber + " to " + ack.getPort());
+        logPacketSent(ack);
     }
 
-    public void close() throws IOException {
+    public void close() {
+        closed = true;
+    }
+
+    public void sendFinPacket() throws IOException {
         Packet fin = new PacketBuilder()
         .setPacketType(PacketType.FIN)
         .setPeerAddress(targetAddress.getAddress())
@@ -226,6 +237,26 @@ public abstract class TCPSocket implements Runnable {
         .setSequenceNumber(currentSequenceNumber)
         .build();
         channel.write(fin.toByteBuffer());
-        log.info("Sent FIN with sequence number " + currentSequenceNumber + " to " + fin.getPort());
+        logPacketSent(fin);
+    }
+
+    public void sendFinAckPacket() throws IOException {
+        Packet finack = new PacketBuilder()
+            .setPacketType(PacketType.FINACK)
+            .setPeerAddress(targetAddress.getAddress())
+            .setPort(targetAddress.getPort())
+            .setSequenceNumber(currentSequenceNumber)
+            .build();
+        channel.write(finack.toByteBuffer());
+        logPacketSent(finack);
+    }
+
+    private void logPacketReceived(Packet p) {
+        log.info("Received " + p.getPacketType().toString() + " with sequence number " + p.getSequenceNumber()
+         + " from " + p.getPort());
+    }
+
+    private void logPacketSent(Packet p) {
+        log.info("Sent " + p.getPacketType().toString() + " with sequence number " + p.getSequenceNumber() + " to " + p.getPort());
     }
 }
