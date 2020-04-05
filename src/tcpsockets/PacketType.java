@@ -1,7 +1,7 @@
 package tcpsockets;
 
 public enum PacketType{
-	ACK(0), SYN(1), SYNACK(2), DATA(3), FIN(4);
+	ACK(0), SYN(1), SYNACK(2), DATA(3), FIN(4), FINACK(5);
 
 	private int value;
 	

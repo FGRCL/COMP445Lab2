@@ -70,6 +70,9 @@ public abstract class TCPSocket implements Runnable {
         long sendBase = currentSequenceNumber;
         long receiveBase = 2;
         int windowSize = 3;
+
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.start();
         int timeout = 1000;
 
         byte[] data = new byte[Packet.MAX_PAYLOAD_SIZE];
@@ -110,6 +113,7 @@ public abstract class TCPSocket implements Runnable {
                 if (packetPair.status == PacketStatusPair.Status.NOT_SENT) {
                     channel.write(packetPair.packet.toByteBuffer());
                     packetPair.status = PacketStatusPair.Status.NACK;
+                    stopwatch.reset();
                 }
             }
             
@@ -147,14 +151,14 @@ public abstract class TCPSocket implements Runnable {
             }
 
             // resend nack packets
-            boolean timerExceeded = false;
-            if (timerExceeded) {
+            if (stopwatch.getTime() > timeout) {
                 for (long i = sendBase; i < sendBase + windowSize; i++) {
                     PacketStatusPair packetPair = packets.get(i);
                     if (packetPair.status == PacketStatusPair.Status.NACK) {
                         channel.write(packetPair.packet.toByteBuffer());
                     }
                 }
+                stopwatch.reset();
             }
         }
     }
@@ -180,5 +184,15 @@ public abstract class TCPSocket implements Runnable {
         .setSequenceNumber(sequenceNumber)
         .build();
         channel.write(ack.toByteBuffer());
+    }
+
+    private void close() throws IOException {
+        Packet fin = new PacketBuilder()
+        .setPacketType(PacketType.FIN)
+        .setPeerAddress(targetAddress.getAddress())
+        .setPort(targetAddress.getPort())
+        .setSequenceNumber(0)
+        .build();
+        channel.write(fin.toByteBuffer());
     }
 }
