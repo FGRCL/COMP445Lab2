@@ -110,7 +110,7 @@ public abstract class TCPSocket implements Runnable {
             // send packets
             for (long i = sendBase; i < sendBase + windowSize; i++) {
                 PacketStatusPair packetPair = packets.get(i);
-                if (packetPair.status == PacketStatusPair.Status.NOT_SENT) {
+                if (packetPair != null && packetPair.status == PacketStatusPair.Status.NOT_SENT) {
                     channel.write(packetPair.packet.toByteBuffer());
                     packetPair.status = PacketStatusPair.Status.NACK;
                     stopwatch.reset();
@@ -125,7 +125,7 @@ public abstract class TCPSocket implements Runnable {
 
                     // increment base
                     long newSendBase = sendBase;
-                    while (packets.get(newSendBase).status == PacketStatusPair.Status.ACK) {
+                    while (packets.get(newSendBase) != null && packets.get(newSendBase).status == PacketStatusPair.Status.ACK) {
                         newSendBase++;
                     }
                     sendBase = newSendBase;
@@ -148,13 +148,14 @@ public abstract class TCPSocket implements Runnable {
                     channel.close();
                     return;
                 }
+                receivedPacket = receivePacket();
             }
 
             // resend nack packets
             if (stopwatch.getTime() > timeout) {
                 for (long i = sendBase; i < sendBase + windowSize; i++) {
                     PacketStatusPair packetPair = packets.get(i);
-                    if (packetPair.status == PacketStatusPair.Status.NACK) {
+                    if (packetPair != null && packetPair.status == PacketStatusPair.Status.NACK) {
                         channel.write(packetPair.packet.toByteBuffer());
                     }
                 }

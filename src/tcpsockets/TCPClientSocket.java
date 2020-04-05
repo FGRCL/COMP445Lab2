@@ -1,20 +1,15 @@
 package tcpsockets;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.logging.Logger;
+
 import tcpsockets.exceptions.BadPacketException;
 import tcpsockets.exceptions.TimeoutExceededException;
-import tcpsockets.streams.TCPInputStream;
-import tcpsockets.streams.TCPOutputStream;
 
 public class TCPClientSocket extends TCPSocket{
     static Logger log = Logger.getLogger(TCPClientSocket.class.getName());
