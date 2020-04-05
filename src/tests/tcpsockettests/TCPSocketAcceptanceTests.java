@@ -47,11 +47,10 @@ public class TCPSocketAcceptanceTests {
         t.start();
         TCPClientSocket client = new TCPClientSocket(serverAddress, routerAddress);
         try {
-            client.getOutputStream().write(5);
+            client.getInputStream().read();
         } catch(IOException e) {
             assert(false);
         }
-        while(true) {}
 	}
 
 }
