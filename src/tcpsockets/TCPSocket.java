@@ -119,6 +119,7 @@ public abstract class TCPSocket implements Runnable {
             Packet receivedPacket = receivePacket();
             while(receivedPacket != null) {
                 if (receivedPacket.getPacketType() == PacketType.ACK) {
+                    log.info("Received ACK with seq " + receivedPacket.getSequenceNumber() + " from " + receivedPacket.getPort());
                     PacketStatusPair ackedPacket = packets.get(receivedPacket.getSequenceNumber());
                     ackedPacket.status = PacketStatusPair.Status.ACK;
 
@@ -130,6 +131,7 @@ public abstract class TCPSocket implements Runnable {
                     sendBase = newSendBase;
 
                 } else if (receivedPacket.getPacketType() == PacketType.DATA) {
+                    log.info("Received DATA with seq " + receivedPacket.getSequenceNumber() + " from " + receivedPacket.getPort());
                     // Add the received data to our buffer
                     if(receivedPacket.getSequenceNumber() >= receiveBase)
                         incomingPackets.put(receivedPacket.getSequenceNumber(), receivedPacket);
@@ -154,7 +156,8 @@ public abstract class TCPSocket implements Runnable {
             }
 
             // resend nack packets
-            if (stopwatch.getTime() > timeout) {
+            long time = stopwatch.getTime();
+            if (time > timeout) {
                 for (long i = sendBase; i < sendBase + windowSize; i++) {
                     PacketStatusPair packetPair = packets.get(i);
                     if (packetPair != null && packetPair.status == PacketStatusPair.Status.NACK) {
@@ -184,6 +187,8 @@ public abstract class TCPSocket implements Runnable {
 
         // Reset the data
         pointer = 0;
+
+        log.info("Sent data packet with sequence number " + packet.getSequenceNumber() + " to port " + packet.getPort());
     }
 
     private Packet receivePacket() {
@@ -207,6 +212,7 @@ public abstract class TCPSocket implements Runnable {
         .setSequenceNumber(sequenceNumber)
         .build();
         channel.write(ack.toByteBuffer());
+        log.info("Sent ACK with sequence number " + sequenceNumber + " to " + ack.getPort());
     }
 
     public void close() throws IOException {
