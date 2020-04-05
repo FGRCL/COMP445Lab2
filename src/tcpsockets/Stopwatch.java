@@ -2,7 +2,6 @@ package tcpsockets;
 
 public class Stopwatch {
 	private long startMillis;
-	private long lastRecordedDiff;
 	private boolean started;
 	
 	public Stopwatch() {
