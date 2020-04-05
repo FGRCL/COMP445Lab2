@@ -213,7 +213,7 @@ public abstract class TCPSocket implements Runnable {
         channel.write(ack.toByteBuffer());
     }
 
-    private void close() throws IOException {
+    public void close() throws IOException {
         Packet fin = new PacketBuilder()
         .setPacketType(PacketType.FIN)
         .setPeerAddress(targetAddress.getAddress())
