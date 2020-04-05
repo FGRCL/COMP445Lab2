@@ -50,15 +50,18 @@ public class Packet {
 		this.peerAddress = peerAddress;
 		this.port = port;
 		this.data = data;
-	}
+    }
 	
     public static Packet makePacket(ByteBuffer byteBuffer) {//TODO change this logic once I merge it
         try {
-            byte[] address = {byteBuffer.get(5), byteBuffer.get(6), byteBuffer.get(7), byteBuffer.get(8)};
-            int port = byteBuffer.getShort(9) + 65536;
+            byteBuffer.flip();
+            PacketType type = PacketType.values()[byteBuffer.get()];
+            long sequenceNumber = byteBuffer.getInt();
+            byte[] address = {byteBuffer.get(), byteBuffer.get(), byteBuffer.get(), byteBuffer.get()};
+            int port = byteBuffer.getShort() + 65536;
             PacketBuilder builder = new PacketBuilder()
-                    .setPacketType(PacketType.values()[byteBuffer.get(0)])
-                    .setSequenceNumber(byteBuffer.getInt(1))
+                    .setPacketType(type)
+                    .setSequenceNumber(sequenceNumber)
                     .setPeerAddress(InetAddress.getByAddress(address))
                     .setPort(port);
             byte[] payload = new byte[byteBuffer.remaining()];
@@ -77,7 +80,7 @@ public class Packet {
 		private long sequenceNumber = 1L;
 		private InetAddress peerAddress = null;
 		private int port = 0;
-		private byte[] data = new byte[0];
+        private byte[] data = new byte[0];
 		public PacketBuilder setPacketType(PacketType packetType) {
 			this.packetType = packetType;
 			return this;
@@ -95,7 +98,7 @@ public class Packet {
 			return this;
 		}
 		public PacketBuilder setData(byte[] data) {
-			this.data = data;
+            this.data = data;
 			return this;
 		}
 		public Packet build() {

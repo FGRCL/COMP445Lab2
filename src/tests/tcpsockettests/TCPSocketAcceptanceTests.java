@@ -88,8 +88,8 @@ public class TCPSocketAcceptanceTests {
         t.start();
         TCPClientSocket client = new TCPClientSocket(serverAddress, routerAddress);
 
-        String sentMessage = "This is a test sent message.\r\n";
-        String expectedResponse = "This is the response that we expect to get.\r\n";
+        String sentMessage = "This is a test sent message.";
+        String expectedResponse = "This is the response that we expect to get.";
         try {
             Thread.sleep(1000);
             Responder responder = new Responder(server.getInputStream(), server.getOutputStream(), sentMessage, expectedResponse);
@@ -99,6 +99,7 @@ public class TCPSocketAcceptanceTests {
             BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
             output.write(sentMessage.toString().getBytes("UTF-8"));
+            output.write("\r\n".toString().getBytes("UTF-8"));
             String response = reader.readLine();
             assert(response.equals(expectedResponse));
         } catch(Exception e) {

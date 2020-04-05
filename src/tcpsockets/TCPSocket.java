@@ -92,8 +92,12 @@ public abstract class TCPSocket implements Runnable {
                 pointer++;
                 if (pointer >= Packet.MAX_PAYLOAD_SIZE) {
                     // Create a new packet to send
+                    byte[] payload = new byte[pointer];
+                    for(int i = 0; i < pointer; i++) {
+                        payload[i] = data[i];
+                    }
                     Packet packet = new PacketBuilder().setPacketType(PacketType.DATA)
-                            .setPeerAddress(targetAddress.getAddress()).setPort(targetAddress.getPort()).setData(data)
+                            .setPeerAddress(targetAddress.getAddress()).setPort(targetAddress.getPort()).setData(payload)
                             .setSequenceNumber(currentSequenceNumber).build();
 
                     // Add to the unsent packets
@@ -108,8 +112,12 @@ public abstract class TCPSocket implements Runnable {
             }
             if(pointer > 0) {
                 // Create a new packet to send
+                byte[] payload = new byte[pointer];
+                for(int i = 0; i < pointer; i++) {
+                    payload[i] = data[i];
+                }
                 Packet packet = new PacketBuilder().setPacketType(PacketType.DATA)
-                        .setPeerAddress(targetAddress.getAddress()).setPort(targetAddress.getPort()).setData(data)
+                        .setPeerAddress(targetAddress.getAddress()).setPort(targetAddress.getPort()).setData(payload)
                         .setSequenceNumber(currentSequenceNumber).build();
 
                 // Add to the unsent packets
@@ -155,7 +163,9 @@ public abstract class TCPSocket implements Runnable {
 
                     // If we are able to send data to the upper layer, send some data
                     while(incomingPackets.containsKey(receiveBase)) {
-                        output.write(incomingPackets.get(receiveBase).getData());
+                        byte[] payload = incomingPackets.get(receiveBase).getData();
+                        output.write(payload);
+                        output.flush();
                         incomingPackets.remove(receiveBase);
                         receiveBase += 1;
                     }
