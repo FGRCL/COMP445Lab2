@@ -5,26 +5,23 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.DatagramChannel;
 import java.util.logging.Logger;
 
-public class TCPServerSocket extends TCPSocket{
+public class TCPServerSocket {
     static Logger log = Logger.getLogger(TCPServerSocket.class.getName());
-
+    private DatagramChannel channel;
     InetSocketAddress myAddress;
 
 	public TCPServerSocket(int port) {
-        super(new InetSocketAddress("localhost", port));
-        myAddress = new InetSocketAddress("localhost", port);
-	}
-
-    @Override
-	public void setupChannel() {
-		try {
-			channel.bind(myAddress);
+        try {
+            channel = DatagramChannel.open();
+            myAddress = new InetSocketAddress("localhost", port);
+            channel.bind(myAddress);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+            e.printStackTrace();
+            System.exit(1);
+        }
 	}
 	
 	public String receive() {
@@ -53,7 +50,6 @@ public class TCPServerSocket extends TCPSocket{
 				if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
                     log.info("Received SYN from " + clientAddress.getHostName() + ":" + clientAddress.getPort());
                     TCPSocket connection = new TCPServerConnectionSocket(clientAddress, routerAddress);
-                    connection.setupChannel();
                     return connection;
 				}
 				 
@@ -63,12 +59,6 @@ public class TCPServerSocket extends TCPSocket{
 			}
 		}
 	}
-
-	@Override
-	public void send(String data) {
-		// TODO Auto-generated method stub
-		
-    }
     
     public InetSocketAddress getRouterAddress(SocketAddress remote) {
         String[] info = remote.toString().split(":");

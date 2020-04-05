@@ -1,5 +1,6 @@
 package tests.tcpsockettests;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
@@ -16,7 +17,6 @@ public class TCPSocketAcceptanceTests {
         private boolean running;
         public TestServer(int port) {
             socket = new TCPServerSocket(port);
-            socket.setupChannel();
             running = true;
         }
 
@@ -32,16 +32,6 @@ public class TCPSocketAcceptanceTests {
         }
     }
 
-    @Test
-    public void shortport() {
-        int port = 8080;
-        ByteBuffer buffer = ByteBuffer.allocate(1024); 
-        buffer.putShort((short)port);
-        buffer.flip();
-        int newPort = (int) buffer.getShort();
-        assert(newPort == port);
-    }
-	
 	@Test
 	public void CanPerformHandshake() {
         String localhost = "localhost";
@@ -56,7 +46,12 @@ public class TCPSocketAcceptanceTests {
 		Thread t = new Thread(server);
         t.start();
         TCPClientSocket client = new TCPClientSocket(serverAddress, routerAddress);
-        client.setupChannel();
+        try {
+            client.getOutputStream().write(5);
+        } catch(IOException e) {
+            assert(false);
+        }
+        while(true) {}
 	}
 
 }

@@ -10,20 +10,9 @@ import java.util.logging.Logger;
 
 public class TCPServerConnectionSocket extends TCPSocket{
     Logger log = Logger.getLogger(TCPServerConnectionSocket.class.getName());
-
-    InetSocketAddress clientAddress;
-    InetSocketAddress routerAddress;
-
-	public TCPServerConnectionSocket(InetSocketAddress clientAddress) {
-        super(clientAddress);
-        this.clientAddress = clientAddress;
-        this.routerAddress = clientAddress;
-    }
     
     public TCPServerConnectionSocket(InetSocketAddress clientAddress, InetSocketAddress routerAddress) {
-        super(routerAddress);
-        this.clientAddress = clientAddress;
-        this.routerAddress = routerAddress;
+        super(clientAddress, routerAddress);
     }
 	
 	@Override
@@ -32,7 +21,7 @@ public class TCPServerConnectionSocket extends TCPSocket{
             channel.configureBlocking(false);
             channel.connect(routerAddress);
 			if(handshakeSuccessful()) {
-				log.info("Handshake successful with " + clientAddress.getHostName() + ":" + clientAddress.getPort());
+				log.info("Handshake successful with " + targetAddress.getHostName() + ":" + targetAddress.getPort());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -44,11 +33,12 @@ public class TCPServerConnectionSocket extends TCPSocket{
 		Packet synackPacket  = new Packet.PacketBuilder()
 				.setPacketType(PacketType.SYNACK)
 				.setSequenceNumber(1)
-				.setPeerAddress(clientAddress.getAddress())
-				.setPort(clientAddress.getPort())
+				.setPeerAddress(targetAddress.getAddress())
+				.setPort(targetAddress.getPort())
 				.build();
 			
-			Selector sel;
+            Selector sel;
+            log.info("Sending SYNACK to " + targetAddress.getPort() + " through router " + routerAddress.getPort());
 			channel.write(synackPacket.toByteBuffer());
 			sel = Selector.open();
 			channel.register(sel, SelectionKey.OP_READ);
@@ -67,17 +57,4 @@ public class TCPServerConnectionSocket extends TCPSocket{
 
 		return false;
 	}
-
-	@Override
-	public void send(String data) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public String receive() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
