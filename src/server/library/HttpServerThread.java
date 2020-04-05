@@ -21,7 +21,7 @@ public class HttpServerThread extends Thread{
              HttpRequest request = new HttpRequest(client.getInputStream());
              response = observer.onRequest(request);
              client.getOutputStream().write(response.toString().getBytes("UTF-8"));
-             client.getOutputStream().close();
+             client.close();
          } catch(IOException e) {
              System.err.println(e.getMessage());
              response = new HttpResponse(HttpVersion.OnePointOh, Status.INTERNAL_SERVER_ERROR);

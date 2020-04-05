@@ -121,6 +121,9 @@ public abstract class TCPSocket implements Runnable {
                 if (receivedPacket.getPacketType() == PacketType.ACK) {
                     log.info("Received ACK with seq " + receivedPacket.getSequenceNumber() + " from " + receivedPacket.getPort());
                     PacketStatusPair ackedPacket = packets.get(receivedPacket.getSequenceNumber());
+                    if(ackedPacket == null) {
+                        log.info("WARNING: Unexpected ACK with sequence number " + receivedPacket.getSequenceNumber());
+                    }
                     ackedPacket.status = PacketStatusPair.Status.ACK;
 
                     // increment base
@@ -148,8 +151,8 @@ public abstract class TCPSocket implements Runnable {
                         receiveBase += 1;
                     }
                 } else if(receivedPacket.getPacketType() == PacketType.FIN) {
+                    log.info("Recieved FIN with sequence number " + receivedPacket.getSequenceNumber() + " from " + receivedPacket.getPort());
                     output.close();
-                    channel.close();
                     return;
                 }
                 receivedPacket = receivePacket();
@@ -220,8 +223,9 @@ public abstract class TCPSocket implements Runnable {
         .setPacketType(PacketType.FIN)
         .setPeerAddress(targetAddress.getAddress())
         .setPort(targetAddress.getPort())
-        .setSequenceNumber(0)
+        .setSequenceNumber(currentSequenceNumber)
         .build();
         channel.write(fin.toByteBuffer());
+        log.info("Sent FIN with sequence number " + currentSequenceNumber + " to " + fin.getPort());
     }
 }
