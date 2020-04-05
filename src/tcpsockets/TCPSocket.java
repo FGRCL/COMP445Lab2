@@ -12,10 +12,13 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import tcpsockets.Packet.PacketBuilder;
 
 public abstract class TCPSocket implements Runnable {
+    Logger log = Logger.getLogger(TCPSocket.class.getName());
+    
     protected DatagramChannel channel;
 
     protected InetSocketAddress targetAddress;
@@ -65,8 +68,13 @@ public abstract class TCPSocket implements Runnable {
         return new PipedInputStream(output);
     }
 
+    private long currentSequenceNumber;
+    private HashMap<Long, PacketStatusPair> packets;
+    byte[] data;
+    int pointer;
+
     private void selectiveRepeat() throws IOException {
-        long currentSequenceNumber = 2;
+        currentSequenceNumber = 2;
         long sendBase = currentSequenceNumber;
         long receiveBase = 2;
         int windowSize = 3;
@@ -75,10 +83,10 @@ public abstract class TCPSocket implements Runnable {
         stopwatch.start();
         int timeout = 1000;
 
-        byte[] data = new byte[Packet.MAX_PAYLOAD_SIZE];
-        int pointer = 0;
+        data = new byte[Packet.MAX_PAYLOAD_SIZE];
+        pointer = 0;
 
-        HashMap<Long, PacketStatusPair> packets = new HashMap<Long, PacketStatusPair>();
+        packets = new HashMap<Long, PacketStatusPair>();
 
         HashMap<Long, Packet> incomingPackets = new HashMap<Long, Packet>();
 
@@ -91,43 +99,11 @@ public abstract class TCPSocket implements Runnable {
                 data[pointer] = (byte) input.read();
                 pointer++;
                 if (pointer >= Packet.MAX_PAYLOAD_SIZE) {
-                    // Create a new packet to send
-                    byte[] payload = new byte[pointer];
-                    for(int i = 0; i < pointer; i++) {
-                        payload[i] = data[i];
-                    }
-                    Packet packet = new PacketBuilder().setPacketType(PacketType.DATA)
-                            .setPeerAddress(targetAddress.getAddress()).setPort(targetAddress.getPort()).setData(payload)
-                            .setSequenceNumber(currentSequenceNumber).build();
-
-                    // Add to the unsent packets
-                    packets.put(currentSequenceNumber, new PacketStatusPair(packet));
-
-                    // Increment the sequence number
-                    currentSequenceNumber += 1;
-
-                    // Reset the data
-                    pointer = 0;
+                    sendPacket();
                 }
             }
             if(pointer > 0) {
-                // Create a new packet to send
-                byte[] payload = new byte[pointer];
-                for(int i = 0; i < pointer; i++) {
-                    payload[i] = data[i];
-                }
-                Packet packet = new PacketBuilder().setPacketType(PacketType.DATA)
-                        .setPeerAddress(targetAddress.getAddress()).setPort(targetAddress.getPort()).setData(payload)
-                        .setSequenceNumber(currentSequenceNumber).build();
-
-                // Add to the unsent packets
-                packets.put(currentSequenceNumber, new PacketStatusPair(packet));
-
-                // Increment the sequence number
-                currentSequenceNumber += 1;
-
-                // Reset the data
-                pointer = 0;
+                sendPacket();
             }
 
             // send packets
@@ -188,6 +164,26 @@ public abstract class TCPSocket implements Runnable {
                 stopwatch.reset();
             }
         }
+    }
+
+    private void sendPacket() {
+        // Create a new packet to send
+        byte[] payload = new byte[pointer];
+        for(int i = 0; i < pointer; i++) {
+            payload[i] = data[i];
+        }
+        Packet packet = new PacketBuilder().setPacketType(PacketType.DATA)
+                .setPeerAddress(targetAddress.getAddress()).setPort(targetAddress.getPort()).setData(payload)
+                .setSequenceNumber(currentSequenceNumber).build();
+
+        // Add to the unsent packets
+        packets.put(currentSequenceNumber, new PacketStatusPair(packet));
+
+        // Increment the sequence number
+        currentSequenceNumber += 1;
+
+        // Reset the data
+        pointer = 0;
     }
 
     private Packet receivePacket() {
