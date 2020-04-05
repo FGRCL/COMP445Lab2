@@ -106,6 +106,21 @@ public abstract class TCPSocket implements Runnable {
                     pointer = 0;
                 }
             }
+            if(pointer > 0) {
+                // Create a new packet to send
+                Packet packet = new PacketBuilder().setPacketType(PacketType.DATA)
+                        .setPeerAddress(targetAddress.getAddress()).setPort(targetAddress.getPort()).setData(data)
+                        .setSequenceNumber(currentSequenceNumber).build();
+
+                // Add to the unsent packets
+                packets.put(currentSequenceNumber, new PacketStatusPair(packet));
+
+                // Increment the sequence number
+                currentSequenceNumber += 1;
+
+                // Reset the data
+                pointer = 0;
+            }
 
             // send packets
             for (long i = sendBase; i < sendBase + windowSize; i++) {
@@ -125,7 +140,7 @@ public abstract class TCPSocket implements Runnable {
 
                     // increment base
                     long newSendBase = sendBase;
-                    while (packets.get(newSendBase).status == PacketStatusPair.Status.ACK) {
+                    while (packets.get(newSendBase) != null && packets.get(newSendBase).status == PacketStatusPair.Status.ACK) {
                         newSendBase++;
                     }
                     sendBase = newSendBase;

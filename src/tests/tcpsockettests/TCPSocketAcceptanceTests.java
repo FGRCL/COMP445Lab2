@@ -88,8 +88,8 @@ public class TCPSocketAcceptanceTests {
         t.start();
         TCPClientSocket client = new TCPClientSocket(serverAddress, routerAddress);
 
-        String sentMessage = "This is a test sent message.";
-        String expectedResponse = "This is the response that we expect to get.";
+        String sentMessage = "This is a test sent message.\r\n";
+        String expectedResponse = "This is the response that we expect to get.\r\n";
         try {
             Thread.sleep(1000);
             Responder responder = new Responder(server.getInputStream(), server.getOutputStream(), sentMessage, expectedResponse);
