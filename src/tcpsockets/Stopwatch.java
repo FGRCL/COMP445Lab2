@@ -27,6 +27,11 @@ public class Stopwatch {
 	}
 	
 	private class TimerNotStartedException extends RuntimeException {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		public TimerNotStartedException() {
 			super("Time hasn't been started");
 		}
