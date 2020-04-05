@@ -32,7 +32,7 @@ public class TCPServerSocketTest {
 	
 	@Test
 	public void CanReadFromStream() {
-		String expected = "Hello World!"+(char)-1;
+		String expected = "Hello World!";
 		TestClient client = new TestClient(new InetSocketAddress("localhost", 8080), new InetSocketAddress("localhost", 3000), expected);
 		
 		TCPServerSocket server = new TCPServerSocket(8080);

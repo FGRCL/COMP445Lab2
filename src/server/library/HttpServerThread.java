@@ -1,14 +1,15 @@
 package server.library;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.util.InputMismatchException;
 
+import tcpsockets.TCPSocket;
+
 public class HttpServerThread extends Thread{
-	private Socket client;
+	private TCPSocket client;
 	private HttpRequestObserver observer;
 	
-	public HttpServerThread(Socket client, HttpRequestObserver observer) {
+	public HttpServerThread(TCPSocket client, HttpRequestObserver observer) {
 		this.client = client;
 		this.observer = observer;
 	}

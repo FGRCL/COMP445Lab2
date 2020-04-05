@@ -72,4 +72,8 @@ public class TCPServerSocket {
         int port = ack.getPort();
         return new InetSocketAddress(host, port);
     }
+    
+    public void close() throws IOException {
+    	channel.close();
+    }
 }
