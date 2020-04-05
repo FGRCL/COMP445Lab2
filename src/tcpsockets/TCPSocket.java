@@ -110,7 +110,7 @@ public abstract class TCPSocket implements Runnable {
             // send packets
             for (long i = sendBase; i < sendBase + windowSize; i++) {
                 PacketStatusPair packetPair = packets.get(i);
-                if (packetPair.status == PacketStatusPair.Status.NOT_SENT) {
+                if (packetPair != null && packetPair.status == PacketStatusPair.Status.NOT_SENT) {
                     channel.write(packetPair.packet.toByteBuffer());
                     packetPair.status = PacketStatusPair.Status.NACK;
                     stopwatch.reset();
@@ -132,7 +132,8 @@ public abstract class TCPSocket implements Runnable {
 
                 } else if (receivedPacket.getPacketType() == PacketType.DATA) {
                     // Add the received data to our buffer
-                    incomingPackets.putIfAbsent(receivedPacket.getSequenceNumber(), receivedPacket);
+                    if(receivedPacket.getSequenceNumber() >= receiveBase)
+                        incomingPackets.put(receivedPacket.getSequenceNumber(), receivedPacket);
 
                     // Send an ACK back to the other end
                     sendAck(receivedPacket.getSequenceNumber());
@@ -148,13 +149,14 @@ public abstract class TCPSocket implements Runnable {
                     channel.close();
                     return;
                 }
+                receivedPacket = receivePacket();
             }
 
             // resend nack packets
             if (stopwatch.getTime() > timeout) {
                 for (long i = sendBase; i < sendBase + windowSize; i++) {
                     PacketStatusPair packetPair = packets.get(i);
-                    if (packetPair.status == PacketStatusPair.Status.NACK) {
+                    if (packetPair != null && packetPair.status == PacketStatusPair.Status.NACK) {
                         channel.write(packetPair.packet.toByteBuffer());
                     }
                 }
