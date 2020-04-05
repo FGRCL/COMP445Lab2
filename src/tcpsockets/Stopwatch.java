@@ -18,7 +18,7 @@ public class Stopwatch {
 		if(!started) {
 			throw new TimerNotStartedException();
 		}
-		return startMillis = System.currentTimeMillis()-startMillis;
+		return System.currentTimeMillis()-startMillis;
 	}
 	
 	public void reset() {
