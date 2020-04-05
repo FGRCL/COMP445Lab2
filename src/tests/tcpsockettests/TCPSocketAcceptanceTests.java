@@ -1,6 +1,10 @@
 package tests.tcpsockettests;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
@@ -8,13 +12,16 @@ import org.junit.Test;
 
 import router.Router;
 import tcpsockets.TCPClientSocket;
+import tcpsockets.TCPServerConnectionSocket;
 import tcpsockets.TCPServerSocket;
+import tcpsockets.TCPSocket;
 
 public class TCPSocketAcceptanceTests {
 	
 	class TestServer implements Runnable {
         private TCPServerSocket socket;
         private boolean running;
+        private TCPSocket connection;
         public TestServer(int port) {
             socket = new TCPServerSocket(port);
             running = true;
@@ -23,12 +30,46 @@ public class TCPSocketAcceptanceTests {
         @Override
         public void run() {
         	while(running) {
-        		socket.accept();
+                if(connection == null)
+                    connection = socket.accept();
         	}
         }
         
         public void close() {
         	running = false;
+        }
+
+        public InputStream getInputStream() throws IOException {
+            return connection.getInputStream();
+        }
+
+        public OutputStream getOutputStream() throws IOException {
+            return connection.getOutputStream();
+        }
+    }
+
+    class Responder implements Runnable {
+        BufferedReader reader;
+        OutputStream output;
+        String expected;
+        String response;
+
+        public Responder(InputStream input, OutputStream output, String expected, String response) {
+            reader = new BufferedReader(new InputStreamReader(input));
+            this.output = output;
+            this.expected = expected;
+            this.response = response;
+        }
+        @Override
+        public void run() {
+            try {
+                String line = reader.readLine();
+                if(line.equals(expected)) {
+                    output.write(response.toString().getBytes("UTF-8"));
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -46,11 +87,24 @@ public class TCPSocketAcceptanceTests {
 		Thread t = new Thread(server);
         t.start();
         TCPClientSocket client = new TCPClientSocket(serverAddress, routerAddress);
+
+        String sentMessage = "This is a test sent message.\r\n";
+        String expectedResponse = "This is the response that we expect to get.\r\n";
         try {
-            client.getInputStream().read();
-        } catch(IOException e) {
+            Thread.sleep(1000);
+            Responder responder = new Responder(server.getInputStream(), server.getOutputStream(), sentMessage, expectedResponse);
+            Thread thread = new Thread(responder);
+            thread.start();
+            OutputStream output = client.getOutputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
+
+            output.write(sentMessage.toString().getBytes("UTF-8"));
+            String response = reader.readLine();
+            assert(response.equals(expectedResponse));
+        } catch(Exception e) {
             assert(false);
         }
+        
 	}
 
 }
