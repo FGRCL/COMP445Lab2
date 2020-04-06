@@ -6,18 +6,27 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.util.logging.Logger;
 
 public class TCPServerSocket {
     static Logger log = Logger.getLogger(TCPServerSocket.class.getName());
     private DatagramChannel channel;
     InetSocketAddress myAddress;
+    private Selector selector;
+    private SelectionKey selectionKey;
+    private boolean closed;
 
 	public TCPServerSocket(int port) {
         try {
             channel = DatagramChannel.open();
             myAddress = new InetSocketAddress("localhost", port);
             channel.bind(myAddress);
+            selector = Selector.open();
+            channel.configureBlocking(false);
+            selectionKey = channel.register(selector, SelectionKey.OP_READ);
+            closed = false;
 		} catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
@@ -35,29 +44,33 @@ public class TCPServerSocket {
 		return packet.getPayload();
 	}
 	
-	public TCPSocket accept() {
-		while(true) {
-			try {
-				ByteBuffer dst = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE).order(ByteOrder.BIG_ENDIAN);
-				dst.clear();
-                SocketAddress remote = channel.receive(dst);
-                
-                Packet ack = Packet.makePacket(dst);
-
-                InetSocketAddress routerAddress = getRouterAddress(remote);
-                InetSocketAddress clientAddress = getClientAddress(ack);
+	public TCPSocket accept() throws SocketClosedException {
+		TCPServerConnectionSocket connection = null;
+		try {
+			ByteBuffer dst = ByteBuffer.allocate(Packet.MAX_PACKET_SIZE).order(ByteOrder.BIG_ENDIAN);
+			dst.clear();
+			
+			selector.select();
+			
+			if(closed) {
+				throw new SocketClosedException("Server Socket Closed");
+			}else {
+				SocketAddress remote = channel.receive(dst);
+	            
+	            Packet ack = Packet.makePacket(dst);
+	            	InetSocketAddress routerAddress = getRouterAddress(remote);
+	                InetSocketAddress clientAddress = getClientAddress(ack);
 
 				if(ack.getPacketType() == PacketType.SYN && ack.getSequenceNumber() == 0) {
                     log.info("Received SYN from " + clientAddress.getHostName() + ":" + clientAddress.getPort());
-                    TCPSocket connection = new TCPServerConnectionSocket(clientAddress, routerAddress);
-                    return connection;
+                    connection = new TCPServerConnectionSocket(clientAddress, routerAddress);
 				}
-				 
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		return connection;
 	}
     
     public InetSocketAddress getRouterAddress(SocketAddress remote) {
@@ -74,6 +87,9 @@ public class TCPServerSocket {
     }
     
     public void close() throws IOException {
+    	closed = true;
+    	selector.wakeup();
     	channel.close();
+    	selector.close();
     }
 }

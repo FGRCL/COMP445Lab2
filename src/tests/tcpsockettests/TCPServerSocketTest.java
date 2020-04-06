@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 
 import org.junit.Test;
 
+import tcpsockets.SocketClosedException;
 import tcpsockets.TCPClientSocket;
 import tcpsockets.TCPServerSocket;
 import tcpsockets.TCPSocket;
@@ -23,6 +24,7 @@ public class TCPServerSocketTest {
 		public void run() {
 			try {
 				strippedSocks.getOutputStream().write(message.getBytes());
+				strippedSocks.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -37,7 +39,13 @@ public class TCPServerSocketTest {
 		
 		TCPServerSocket server = new TCPServerSocket(8080);
 		client.start();
-		TCPSocket clientConnection = server.accept();
+		TCPSocket clientConnection = null;
+		try {
+			clientConnection = server.accept();
+		} catch (SocketClosedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		StringBuilder receivedString = new StringBuilder();
 		int character;

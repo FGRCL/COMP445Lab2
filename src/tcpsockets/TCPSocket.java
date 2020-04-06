@@ -25,7 +25,13 @@ public abstract class TCPSocket implements Runnable {
     protected InetSocketAddress routerAddress;
 
     private PipedInputStream input;
+    private PipedOutputStream userOutput;
+    
     private PipedOutputStream output;
+    private PipedInputStream userInput;
+    
+    
+    private int PASSIVE_WAIT_TIMEOUT = 10000;
 
     /**
      * Creates a new TCP socket that uses a datagram channel to send datagrams to
@@ -40,6 +46,8 @@ public abstract class TCPSocket implements Runnable {
             this.routerAddress = routerAddress;
             input = new PipedInputStream();
             output = new PipedOutputStream();
+            userOutput = new PipedOutputStream(input);
+            userInput = new PipedInputStream(output);
             new Thread(this).start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -61,11 +69,11 @@ public abstract class TCPSocket implements Runnable {
     public abstract void setupChannel();
 
     public OutputStream getOutputStream() throws IOException {
-        return new PipedOutputStream(input);
+        return userOutput;
     }
 
     public InputStream getInputStream() throws IOException {
-        return new PipedInputStream(output);
+        return userInput;
     }
 
     private long currentSequenceNumber;
@@ -82,7 +90,9 @@ public abstract class TCPSocket implements Runnable {
 
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.start();
-        int timeout = 1000;
+        Stopwatch passiveWaitWatch = new Stopwatch();
+        passiveWaitWatch.start();
+        int timeout = 10;
 
         data = new byte[Packet.MAX_PAYLOAD_SIZE];
         pointer = 0;
@@ -166,11 +176,16 @@ public abstract class TCPSocket implements Runnable {
                     return;
                 }
                 receivedPacket = receivePacket();
+                passiveWaitWatch.reset();
             }
 
+            
+            
+            
             // resend nack packets
             long time = stopwatch.getTime();
             if (time > timeout) {
+            	
                 for (long i = sendBase; i < sendBase + windowSize; i++) {
                     PacketStatusPair packetPair = packets.get(i);
                     if (packetPair != null && packetPair.status == PacketStatusPair.Status.NACK) {
@@ -178,6 +193,11 @@ public abstract class TCPSocket implements Runnable {
                     }
                 }
                 stopwatch.reset();
+            }
+            
+            if(passiveWaitWatch.getTime() > PASSIVE_WAIT_TIMEOUT) {
+            	log.info("Haven't received anything for "+PASSIVE_WAIT_TIMEOUT+"ms killing socket");
+            	return;
             }
         }
     }

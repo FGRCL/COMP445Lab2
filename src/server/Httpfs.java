@@ -10,13 +10,10 @@ public class Httpfs {
 	public static void main(String[] args) {
         HttpfsOptions options = new HttpfsOptions(args);
         
-        try {
-            FileServer fs = new FileServer(FILE_DIRECTORY);
-            server = new HttpServer(options.port, fs);
-            server.start();
-        } catch(IOException e) {
-            System.err.println(e.getMessage());
-        }
+        FileServer fs = new FileServer(FILE_DIRECTORY);
+        server = new HttpServer(options.port, fs);
+        server.start();
+
     }
     
     public static void stop() {

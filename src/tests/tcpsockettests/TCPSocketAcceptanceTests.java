@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import org.junit.Test;
 
 import router.Router;
+import tcpsockets.SocketClosedException;
 import tcpsockets.TCPClientSocket;
 import tcpsockets.TCPServerConnectionSocket;
 import tcpsockets.TCPServerSocket;
@@ -31,7 +32,12 @@ public class TCPSocketAcceptanceTests {
         public void run() {
         	while(running) {
                 if(connection == null)
-                    connection = socket.accept();
+					try {
+						connection = socket.accept();
+					} catch (SocketClosedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
         	}
         }
         

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 import router.Router;
+import tcpsockets.SocketClosedException;
 import tcpsockets.TCPClientSocket;
 import tcpsockets.TCPServerSocket;
 
@@ -27,7 +28,12 @@ public class TCPClientSocketTest {
         @Override
         public void run() {
         	while(running) {
-        		socket.accept();
+        		try {
+					socket.accept();
+				} catch (SocketClosedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
         	}
         }
         

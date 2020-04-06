@@ -31,6 +31,13 @@ public class AcceptanceTests {
     @AfterEach
     public void stopServer() {
         server.stop();
+        try {
+			serverThread.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        ;
     }
 
     class TestServer implements Runnable {
