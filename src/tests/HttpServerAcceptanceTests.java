@@ -2,14 +2,16 @@ package tests;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import client.Client;
 import client.Options;
-
-import server.library.*;
+import server.library.HttpRequest;
+import server.library.HttpRequestObserver;
+import server.library.HttpResponse;
+import server.library.HttpServer;
+import server.library.HttpVersion;
+import server.library.Status;
 
 public class HttpServerAcceptanceTests {
     class MockHttpRequestObserver implements HttpRequestObserver {
@@ -32,11 +34,7 @@ public class HttpServerAcceptanceTests {
 
         @Override
         public void run() {
-            try {
-                new HttpServer(80, observer).start();
-            } catch(IOException e) {
-                System.out.println("Failed to start test server");
-            }
+            new HttpServer(80, observer).start();
         }
     }
 

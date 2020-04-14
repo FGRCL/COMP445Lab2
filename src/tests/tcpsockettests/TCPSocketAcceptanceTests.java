@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.Random;
 
 import org.junit.Test;
 
@@ -114,5 +115,48 @@ public class TCPSocketAcceptanceTests {
         } finally {
             Router.stop();
         }
+	}
+	
+	@Test
+	public void testWithManyPackets() {
+		//given
+		String localhost = "localhost";
+        int serverPort = 8080;
+        int routerPort = 3000;
+
+        InetSocketAddress serverAddress = new InetSocketAddress(localhost, serverPort);
+        InetSocketAddress routerAddress = new InetSocketAddress(localhost, routerPort);
+
+		Router.start(3000, 0.0f, "5ms", 1);
+		TestServer server = new TestServer(serverPort);
+		Thread t = new Thread(server);
+        t.start();
+        TCPClientSocket client = new TCPClientSocket(serverAddress, routerAddress);
+        StringBuilder message = new StringBuilder();
+        Random random = new Random(12345);
+        for(int i = 0; i<10; i++) {
+        	message.append((char)random.nextInt());
+        }
+        //when
+        try {
+            Thread.sleep(1000);
+            Responder responder = new Responder(server.getInputStream(), server.getOutputStream(), message.toString(), message.toString());
+            Thread thread = new Thread(responder);
+            thread.start();
+            OutputStream output = client.getOutputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
+
+            output.write(message.toString().getBytes("UTF-8"));
+            output.write("\r\n".toString().getBytes("UTF-8"));
+            
+            String response = reader.readLine();
+            client.close();
+        //then
+        assert(response.equals(message));
+		} catch(Exception e) {
+	        assert(false);
+	    } finally {
+	        Router.stop();
+	    }
 	}
 }
